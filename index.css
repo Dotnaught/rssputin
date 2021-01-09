@@ -1,43 +1,81 @@
-html,
-body {
-	padding: 0;
-	margin: 0;
-	background: transparent;
-}
-
-/* Use OS default fonts */
-body {
-	font-family: -apple-system,
-		BlinkMacSystemFont,
-		'Segoe UI',
-		Roboto,
-		Oxygen-Sans,
-		Ubuntu,
-		Cantarell,
-		'Helvetica Neue',
-		sans-serif,
-		'Apple Color Emoji',
-		'Segoe UI Emoji',
-		'Segoe UI Symbol';
-	text-rendering: optimizeLegibility;
-	font-feature-settings: 'liga', 'clig', 'kern';
-}
-
-header {
+table {
+	border: 1px solid #ddd;
+	border-collapse: collapse;
 	position: absolute;
-	width: 500px;
-	height: 250px;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 100%;
+	width: 100%;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-right: 10px;
+	margin-left: 10px;
+}
+.ten {
+	width: 10%;
+}
+.fifteen {
+	width: 15%;
+}
+.twenty {
+	width: 20%;
+}
+.fifty {
+	width: 50%;
+}
+.sixtyfive {
+	width: 65%;
+}
+
+th {
+	border: 1px solid #ddd;
+	border-collapse: collapse;
+}
+td {
+	border: 1px solid #ddd;
+	border-collapse: collapse;
+}
+tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+tr:hover {
+	background-color: #ddd;
+}
+td {
+	padding-left: 6px;
+	padding-right: 6px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	max-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+/* A link that has not been visited */
+a:link {
+	color: #039be5;
+}
+/* A link that has been visited */
+a:visited {
+	color: #024d72;
+}
+/* A link that is hovered on */
+a:hover {
+	color: red;
+}
+/* A link that is selected */
+a:active {
+	color: green;
+}
+
+p {
+	padding: 10px;
+}
+
+#spinner {
+	position: absolute;
 	top: 50%;
 	left: 50%;
-	margin-top: -125px;
-	margin-left: -250px;
-	text-align: center;
-}
-
-header h1 {
-	font-size: 60px;
-	font-weight: 200;
-	margin: 0;
-	padding: 0;
-	opacity: 0.7;
 }

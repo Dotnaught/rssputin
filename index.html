@@ -1,18 +1,52 @@
-<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<title>Electron boilerplate</title>
-		<link rel="stylesheet" href="index.css">
-	</head>
-	<body>
-		<div class="container">
-			<header>
-				<h1>Electron boilerplate</h1>
-				<p></p>
-			</header>
-			<section class="main"></section>
-			<footer></footer>
-		</div>
-	</body>
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'sha256-ajCnbhB2Vwh9/6N6WuU4Tq1Hmi1pm/7YQzQdi4nM4DI='"
+    />
+    <link type="text/css" rel="stylesheet" href="./index.css" media="screen" />
+    <title>Title</title>
+  </head>
+  <body>
+    <div>
+      <header>
+        <h1>Electron boilerplate</h1>
+        <p></p>
+      </header>
+      <section></section>
+      <footer></footer>
+    </div>
+    <div>
+      <table>
+        <colgroup>
+          <col class="ten" />
+          <col class="sixtyfive" />
+          <col class="ten" />
+          <col class="fifteen" />
+        </colgroup>
+        <!--content goes here-->
+      </table>
+    </div>
+    <!--
+    <script>
+      window.api.receive("fromMain", (data) => {
+        console.log("Received from main process:");
+        for (const [key, value] of Object.entries(data)) {
+          console.log(key, value);
+        }
+
+        console.log(`Received ${Object.entries(data)} from main process`);
+      });
+      window.api.send("toMain", "some data");
+	</script>
+	-->
+    <h1>Hello World!</h1>
+    We are using Node.js <span id="node-version"></span>, Chromium
+    <span id="chrome-version"></span>, and Electron
+    <span id="electron-version"></span>.
+    <script src="./renderer.js"></script>
+  </body>
 </html>
