@@ -113,6 +113,7 @@ const setMainWindow = async () => {
 	await app.whenReady();
 	Menu.setApplicationMenu(menu);
 	mainWindow = await createMainWindow();
+	console.log(menu);
 
 	const favoriteAnimal = config.get("favoriteAnimal");
 	mainWindow.webContents.executeJavaScript(
