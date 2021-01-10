@@ -10,13 +10,12 @@ let parser = new Parser({
 
 const { formatDistance, differenceInHours } = require("date-fns");
 
-const test = () => console.log("test");
-
 const getAllFeeds = async (urlList) => {
-	const promises = urlList.map(async (url) => {
+	const promises = urlList.map(async (entry) => {
+		console.log(">", entry.feed);
 		try {
-			const count = await parser.parseURL(url);
-			//console.log("count", count.description);
+			const count = await parser.parseURL(entry.feed);
+			console.log("count", count.description);
 			return count;
 		} catch (e) {
 			console.error(e);
@@ -53,7 +52,7 @@ function processFeeds(feeds) {
 			return url;
 		}
 	};
-
+	//TODO rewrite this since there's no DOM here
 	const extractContent = (text) => {
 		//span = document.createElement("span");
 		//var span = document.createElement("span");
@@ -219,4 +218,4 @@ function processFeeds(feeds) {
 	//deactivateSpinner();
 }
 
-module.exports = { getAllFeeds, processFeeds, test };
+module.exports = { getAllFeeds, processFeeds };

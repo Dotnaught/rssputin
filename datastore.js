@@ -21,7 +21,7 @@ class DataStore extends Store {
 		// set object's todos to feeds in JSON file
 		this.feeds = this.get("feeds") || [];
 
-		return this;
+		return this.feeds;
 	}
 
 	addFeeds(feed) {
@@ -40,7 +40,7 @@ class DataStore extends Store {
 
 	deleteFeeds(feed) {
 		// filter out the target feed
-		this.feeds = this.feeds.filter((t) => t !== feed);
+		this.feeds = this.feeds.filter((item) => item.feed !== feed);
 
 		return this.saveFeeds();
 	}

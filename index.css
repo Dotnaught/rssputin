@@ -1,7 +1,7 @@
 table {
 	border: 1px solid #ddd;
 	border-collapse: collapse;
-	position: absolute;
+	position: relative;
 	top: 0;
 	bottom: 0;
 	left: 0;

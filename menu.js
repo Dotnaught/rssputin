@@ -1,6 +1,6 @@
 "use strict";
 const path = require("path");
-const { app, Menu, shell } = require("electron");
+const { app, Menu, shell, BrowserWindow } = require("electron");
 const {
 	is,
 	appMenu,
@@ -14,6 +14,8 @@ const config = require("./config");
 const showPreferences = () => {
 	// Show the app's preferences here
 };
+
+const getWindow = () => BrowserWindow.getFocusedWindow();
 
 const helpSubmenu = [
 	openUrlMenuItem({
@@ -105,6 +107,14 @@ const macosTemplate = [
 		submenu: [
 			{
 				label: "Custom",
+				click() {
+					let mainWindow = getWindow();
+					if (mainWindow) {
+						console.log("mainWindow");
+					} else {
+						console.log("No mainWindow");
+					}
+				},
 			},
 			{
 				type: "separator",

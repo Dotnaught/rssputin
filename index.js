@@ -1,6 +1,15 @@
 "use strict";
 const path = require("path");
-const { app, BrowserWindow, Menu, ipcMain } = require("electron");
+const {
+	app,
+	BrowserWindow,
+	Menu,
+	ipcMain,
+	screen,
+	dialog,
+	shell,
+	globalShortcut,
+} = require("electron");
 const fs = require("fs");
 /// const {autoUpdater} = require('electron-updater');
 const { is } = require("electron-util");
@@ -12,8 +21,6 @@ const menu = require("./menu");
 const DataStore = require("./datastore");
 
 const rsslib = require("./rsslib");
-const test = rsslib.test;
-test();
 
 unhandled();
 debug();
@@ -34,24 +41,32 @@ app.setAppUserModelId("com.lot49.rssputin");
 // }
 
 const feedData = new DataStore({ name: "links" }); //.json file name at ~/Library/Application Support/[AppName]\[filename].json
-feedData.addFeeds("https://www.cnn.com/headlines.atom");
-console.log(feedData.feeds);
+feedData.addFeeds("https://news.ycombinator.com/rss");
+
+console.log(feedData.getFeeds());
 console.log(app.getPath("userData"));
 
 // Prevent window from being garbage collected
 let mainWindow;
-let callback;
 
 const createMainWindow = async () => {
+	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+	globalShortcut.register("CommandOrControl+R", function () {
+		console.log("CommandOrControl+R is pressed");
+		setMainWindow();
+	});
+
 	const win = new BrowserWindow({
 		title: app.name,
 		show: false,
-		width: 600,
-		height: 400,
+		width,
+		height,
 		webPreferences: {
 			nodeIntegration: false, // is default value after Electron v5
 			contextIsolation: true, // protect against prototype pollution
 			enableRemoteModule: false, // turn off remote
+			worldSafeExecuteJavaScript: true, //sanitize JavaScript
 			preload: path.join(__dirname, "preload.js"), // use a preload script
 		},
 	});
@@ -60,9 +75,14 @@ const createMainWindow = async () => {
 		win.show();
 	});
 
+	win.on("reload", () => {
+		console.log("win reload");
+	});
+
 	win.on("closed", () => {
 		// Dereference the window
 		// For multiple windows store them in an array
+		console.log("closed");
 		mainWindow = undefined;
 	});
 
@@ -75,6 +95,10 @@ const createMainWindow = async () => {
 if (!app.requestSingleInstanceLock()) {
 	app.quit();
 }
+
+app.on("reload", () => {
+	console.log("Reload");
+});
 
 app.on("second-instance", () => {
 	if (mainWindow) {
@@ -109,11 +133,42 @@ ipcMain.on("toMain", (event, args) => {
 	});
 });
 
+ipcMain.on("updateBar", (event, args) => {
+	if (mainWindow) {
+	}
+});
+
+ipcMain.on("reload:mainWindow", function () {
+	console.log("reload");
+	mainWindow.webContents.reloadIgnoringCache();
+});
+
 const setMainWindow = async () => {
-	await app.whenReady();
+	await app.whenReady().then(async () => {
+		const handleRedirect = (e, url) => {
+			if (url !== e.sender.getURL()) {
+				e.preventDefault();
+				shell.openExternal(url);
+			}
+		};
+
+		//setup the menu
+		Menu.setApplicationMenu(menu);
+		//create the mainWindow
+		mainWindow = await createMainWindow();
+		//intercept navigation event so the URL opens in the browser
+		mainWindow.webContents.on("will-navigate", handleRedirect);
+
+		//fetch and process RSS feeds
+		rsslib
+			.getAllFeeds(feedData.getFeeds())
+			.then((feeds) => rsslib.processFeeds(feeds))
+			.then((result) => mainWindow.webContents.send("fromMain", result))
+			.catch((error) => console.error(error.message));
+	});
+	/*
 	Menu.setApplicationMenu(menu);
 	mainWindow = await createMainWindow();
-	console.log(menu);
 
 	const favoriteAnimal = config.get("favoriteAnimal");
 	mainWindow.webContents.executeJavaScript(
@@ -124,7 +179,7 @@ const setMainWindow = async () => {
 		.then((feeds) => rsslib.processFeeds(feeds))
 		.then((result) => mainWindow.webContents.send("fromMain", result))
 		.catch((error) => console.error(error.message));
-
+		*/
 	//let d = [{ feed: "item" }, { feed2: "items2" }]; //JSON.stringify(data, null, "...");
 	//mainWindow.webContents.send("fromMain", d);
 };
