@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self' app: 'unsafe-inline'; object-src 'self' app:;"
+    />
+    <link href="../css/tailwind.css" rel="stylesheet" />
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="../css/index.css"
+      media="screen"
+    />
+
+    <title>Edit Feeds Database</title>
+  </head>
+
+  <body>
+    <p>
+      <b>feed</b>, <b>filterList</b>, and <b>visible</b> fields are editable.
+      <b>Delete Entry</b> will remove the associated feed from the database.
+    </p>
+    <div style="overflow-x: auto">
+      <table style="position: relative"></table>
+    </div>
+    <script src="../js/feedWindow.js" type="text/javascript"></script>
+  </body>
+</html>

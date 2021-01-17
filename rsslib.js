@@ -1,5 +1,7 @@
 "use strict";
 
+const { BrowserWindow } = require("electron");
+
 const Parser = require("rss-parser");
 let parser = new Parser({
 	customFields: {
@@ -9,19 +11,72 @@ let parser = new Parser({
 });
 
 const { formatDistance, differenceInHours } = require("date-fns");
-
+/*
 const getAllFeeds = async (urlList) => {
+	let i = 0;
+	let win = BrowserWindow.getAllWindows();
+	win = win[win.length - 1];
 	const promises = urlList.map(async (entry) => {
-		console.log(">", entry.feed);
-		try {
-			const count = await parser.parseURL(entry.feed);
-			console.log("count", count.description);
-			return count;
-		} catch (e) {
-			console.error(e);
+		if (win) {
+			i += 1;
+			win.webContents.send("updateBar", [i, urlList.length]);
+			console.log("i", i);
+		}
+		if (
+			entry.feed !== "" &&
+			entry.feed !== "Enter valid feed" &&
+			entry.visible
+		) {
+			try {
+				const count = await parser.parseURL(entry.feed);
+				return count;
+			} catch (e) {
+				console.error(e);
+			}
 		}
 	});
+
+
 	return Promise.all(promises);
+};
+*/
+const getAllFeeds = async (urlList, win) => {
+	const promises = urlList.map(async (entry) => {
+		if (
+			entry.feed !== "" &&
+			entry.feed !== "Enter valid feed" &&
+			entry.visible
+		) {
+			try {
+				const count = await parser.parseURL(entry.feed);
+				return count;
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	});
+
+	//track promise completion
+	function progressPromise(promises, tickCallback) {
+		var len = promises.length;
+		var progress = 0;
+
+		function tick(promise) {
+			promise.then(function () {
+				progress++;
+				tickCallback(progress, len);
+			});
+			return promise;
+		}
+
+		return Promise.all(promises.map(tick));
+	}
+	//update progress bar
+	function update(completed, total) {
+		win.webContents.send("updateBar", [completed, total]);
+	}
+
+	return progressPromise(promises, update).then((results) => results);
 };
 
 function processFeeds(feeds) {
@@ -74,6 +129,8 @@ function processFeeds(feeds) {
 		*/
 		//console.log("***" + feed.title + " " + Object.keys(feed));
 		if (feed === undefined) {
+			console.log(feeds.length);
+			console.log(feed);
 			console.log("quit at " + index);
 			return;
 		}
@@ -186,7 +243,7 @@ function processFeeds(feeds) {
 
 			//let arrIndex = fetchedDB.find( ({ rssLink }) => rssLink === 'LINK' );
 
-			obj.visible = undefined;
+			obj.visible = feed.visible;
 
 			/*
 			console.log("author", obj.author);
@@ -209,6 +266,7 @@ function processFeeds(feeds) {
 	arr.sort(function (a, b) {
 		return b.published - a.published;
 	});
+	//add blank feed at head of list
 
 	return arr;
 	//let table = document.querySelector("table");

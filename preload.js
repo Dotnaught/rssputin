@@ -1,5 +1,5 @@
 "use strict";
-const { contextBridge, ipcRenderer, shell } = require("electron");
+const { contextBridge, ipcRenderer } = require("electron");
 
 window.addEventListener("DOMContentLoaded", () => {
 	console.log("loaded");
@@ -23,14 +23,22 @@ window.addEventListener("DOMContentLoaded", () => {
 contextBridge.exposeInMainWorld("api", {
 	send: (channel, data) => {
 		// whitelist channels
-		let validChannels = ["toMain", "updateBar"];
+		let validChannels = [
+			"toMain",
+			"updateBar",
+			"requestFeeds",
+			"setFeedItem",
+			"addFeeds",
+			"deleteFeed",
+		];
 		if (validChannels.includes(channel)) {
 			ipcRenderer.send(channel, data);
 		}
 	},
 	receive: (channel, func) => {
-		let validChannels = ["fromMain", "updateBar"];
+		let validChannels = ["fromMain", "updateBar", "sendFeeds"];
 		if (validChannels.includes(channel)) {
+			console.log(channel);
 			// Deliberately strip event as it includes `sender`
 			ipcRenderer.on(channel, (event, ...args) => func(...args));
 		}

@@ -23,25 +23,44 @@ class DataStore extends Store {
 
 		return this.feeds;
 	}
+	//key, val, oldval, id
+	//args { key: 'visible', val: 0, oldval: NaN, id: '1' }
+	setFeedItem(args) {
+		this.feeds = this.get("feeds") || [];
+		console.log("the feeds", this.feeds);
+		let i = this.feeds.findIndex((x) => x.id === parseInt(args.id));
+		console.log(i, args.key, args.oldval);
+		if (this.feeds[i][args.key] === args.oldval) {
+			this.feeds[i][args.key] = args.val;
+			console.log("updated:", args.key, args.oldval, args.val);
+		}
+		return this.saveFeeds();
+	}
 
-	addFeeds(feed) {
+	addFeeds(creationObj) {
 		// merge the existing feeds with the new feed
-		console.log(this.feeds);
-		console.log(feed);
-		if (this.feeds.filter((item) => item.feed === feed).length === 0) {
-			feed = feed.toLowerCase();
-			let obj = { feed: feed, visible: "true" };
-			this.feeds = [...this.feeds, obj];
+		//console.log(this.feeds.length);
+		//console.log(feed);
+
+		if (
+			this.feeds.filter((item) => item.feed === creationObj.feed).length === 0
+		) {
+			this.feeds = [...this.feeds, creationObj];
 			return this.saveFeeds();
 		} else {
 			console.log("Feed already exists");
 		}
 	}
 
-	deleteFeeds(feed) {
+	deleteFeed(id) {
 		// filter out the target feed
-		this.feeds = this.feeds.filter((item) => item.feed !== feed);
+		console.log("delete", id);
+		console.log(this.feeds);
 
+		this.feeds = this.feeds.filter(
+			(item) => parseInt(item.id) !== parseInt(id)
+		);
+		console.log(this.feeds);
 		return this.saveFeeds();
 	}
 }

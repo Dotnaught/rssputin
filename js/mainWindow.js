@@ -4,30 +4,26 @@ console.log("Render process loaded");
 
 let table = document.querySelector("table");
 
-let progress = 0;
-let invervalSpeed = 10;
-let incrementSpeed = 1;
-document.addEventListener("DOMContentLoaded", function () {
+window.api.receive("updateBar", (args) => {
 	let bar = document.getElementById("bar");
-	let progressInterval = setInterval(function () {
-		progress += incrementSpeed;
-		bar.style.width = progress + "%";
-		if (progress >= 100) {
-			clearInterval(progressInterval);
-		}
-	}, invervalSpeed);
+	let progress = (args[0] / args[1]) * 100;
+	//console.log(args[0], args[1], progress);
+	bar.style.width = progress + "%";
 });
 
 window.api.receive("fromMain", (arr) => {
-	console.log("Received from main process:");
-	for (const [key, value] of Object.entries(arr)) {
-		console.log(key, value);
+	console.log("Received arr from main process...", arr);
+	//for (const [key, value] of Object.entries(arr)) {
+	//	console.log(key, value);
+	//}
+	if (arr.length > 0) {
+		let data = Object.keys(arr[0]);
+		generateTableHead(table);
+		generateTable(table, arr);
+		//console.log(`Received ${Object.entries(data)} from main process`);
+	} else {
+		generateTableHead(table);
 	}
-
-	let data = Object.keys(arr[0]);
-	generateTableHead(table, data);
-	generateTable(table, arr);
-	//console.log(`Received ${Object.entries(data)} from main process`);
 });
 window.api.send("toMain", "some data");
 
