@@ -58,8 +58,8 @@ const getAllFeeds = async (urlList, win) => {
 
 	//track promise completion
 	function progressPromise(promises, tickCallback) {
-		var len = promises.length;
-		var progress = 0;
+		let len = promises.length;
+		let progress = 0;
 
 		function tick(promise) {
 			promise.then(function () {
