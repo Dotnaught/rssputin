@@ -12,7 +12,7 @@ window.api.receive("updateBar", (args) => {
 });
 
 window.api.receive("fromMain", (arr) => {
-	console.log("Received arr from main process...", arr);
+	//console.log("Received arr from main process...", arr);
 	//for (const [key, value] of Object.entries(arr)) {
 	//	console.log(key, value);
 	//}

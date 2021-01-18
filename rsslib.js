@@ -11,35 +11,7 @@ let parser = new Parser({
 });
 
 const { formatDistance, differenceInHours } = require("date-fns");
-/*
-const getAllFeeds = async (urlList) => {
-	let i = 0;
-	let win = BrowserWindow.getAllWindows();
-	win = win[win.length - 1];
-	const promises = urlList.map(async (entry) => {
-		if (win) {
-			i += 1;
-			win.webContents.send("updateBar", [i, urlList.length]);
-			console.log("i", i);
-		}
-		if (
-			entry.feed !== "" &&
-			entry.feed !== "Enter valid feed" &&
-			entry.visible
-		) {
-			try {
-				const count = await parser.parseURL(entry.feed);
-				return count;
-			} catch (e) {
-				console.error(e);
-			}
-		}
-	});
 
-
-	return Promise.all(promises);
-};
-*/
 const getAllFeeds = async (urlList, win) => {
 	const promises = urlList.map(async (entry) => {
 		if (
@@ -48,8 +20,12 @@ const getAllFeeds = async (urlList, win) => {
 			entry.visible
 		) {
 			try {
-				const count = await parser.parseURL(entry.feed);
-				return count;
+				const rssResult = await parser.parseURL(entry.feed);
+				const meta = {
+					res: rssResult,
+					meta: entry,
+				};
+				return meta;
 			} catch (e) {
 				console.error(e);
 			}
@@ -64,6 +40,48 @@ const getAllFeeds = async (urlList, win) => {
 		function tick(promise) {
 			promise.then(function () {
 				progress++;
+				//could filter here
+				tickCallback(progress, len);
+			});
+			return promise;
+		}
+
+		return Promise.all(promises.map(tick));
+	}
+	//update progress bar
+	function update(completed, total) {
+		win.webContents.send("updateBar", [completed, total]);
+	}
+
+	return progressPromise(promises, update).then((results) => results);
+};
+/*
+
+const getAllFeeds = async (urlList, win) => {
+	const promises = urlList.map(async (entry) => {
+		if (
+			entry.feed !== "" &&
+			entry.feed !== "Enter valid feed" &&
+			entry.visible
+		) {
+			try {
+				const rssResult = await parser.parseURL(entry.feed);
+				return rssResult;
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	});
+
+	//track promise completion
+	function progressPromise(promises, tickCallback) {
+		let len = promises.length;
+		let progress = 0;
+
+		function tick(promise) {
+			promise.then(function () {
+				progress++;
+				//could filter here
 				tickCallback(progress, len);
 			});
 			return promise;
@@ -79,7 +97,11 @@ const getAllFeeds = async (urlList, win) => {
 	return progressPromise(promises, update).then((results) => results);
 };
 
-function processFeeds(feeds) {
+*/
+
+function processFeeds(feeds, feedData) {
+	if (feeds[0] === undefined) feeds.shift();
+
 	let arr = [];
 	/*
 	let offsets = {
@@ -99,6 +121,28 @@ function processFeeds(feeds) {
 	8: "https://hnrss.org/newest"
 	*/
 
+	/*
+	 {
+    res: {
+      items: [Array],
+      title: 'Hacker News',
+      description: 'Links for the intellectually curious, ranked by readers.',
+      link: 'https://news.ycombinator.com/'
+    },
+    meta: {
+      feed: 'https://news.ycombinator.com/rss',
+      visible: true,
+      filterList: '',
+      id: 3,
+      mode: '',
+      pageHash: '',
+      linkHash: '',
+      timeLastChecked: 1610904642221,
+      domain: 'https://news.ycombinator.com'
+    }
+  }
+
+	*/
 	const getHostname = (url) => {
 		// use URL constructor and return hostname
 		if (url != undefined) {
@@ -134,12 +178,22 @@ function processFeeds(feeds) {
 			console.log("quit at " + index);
 			return;
 		}
-		feed.items.forEach((i) => {
+
+		feed.res.items.forEach((i) => {
 			//console.dir(i, { depth: null });
 			//console.log(feed.isoDate);
 			//create single array
 			//filter by time
 			//dispay
+			/*
+			let filterList = feedData.forEach(function (entry) {
+				if (entry.feed === i.link) {
+					return entry.filterList;
+				}
+			});
+
+			console.log("filterList", filterList);
+			*/
 			let altURLs = undefined;
 			let altLink = undefined;
 			let aggregatorLink = undefined;
@@ -157,7 +211,7 @@ function processFeeds(feeds) {
 				];
 				// /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi
 				//console.log(feed.title);
-				switch (feed.title) {
+				switch (feed.res.title) {
 					//Reddit
 					case "Hacker News":
 						linkIndex = 0; //not used
@@ -172,7 +226,7 @@ function processFeeds(feeds) {
 						aggIndex = 0;
 						break;
 					case "Techmeme":
-						linkIndex = 1;
+						linkIndex = 0;
 						aggIndex = 2;
 						break;
 					case "Technology - Latest - Google News":
@@ -184,8 +238,10 @@ function processFeeds(feeds) {
 						aggIndex = 1;
 				}
 				//special case for aggregator with link in RSS.link object
-				altLink = feed.title !== "Hacker News" ? altURLs[linkIndex] : i.link;
+				altLink =
+					feed.res.title !== "Hacker News" ? altURLs[linkIndex] : i.link;
 				aggregatorLink = altURLs[aggIndex];
+				//process.stdout.write('test');
 				//console.log("altLinks ", altURLs);
 			}
 			//create the feed object to be displayed
@@ -200,8 +256,8 @@ function processFeeds(feeds) {
 			if (i.isoDate !== undefined) {
 				pubTime = Date.parse(i.isoDate); //milliseconds
 				//console.log("Using i.isoDate"); //2020-11-21T17:25:28.000Z
-			} else if (feed.isoDate !== undefined) {
-				pubTime = Date.parse(feed.isoDate); //milliseconds
+			} else if (feed.res.isoDate !== undefined) {
+				pubTime = Date.parse(feed.res.isoDate); //milliseconds
 				//console.log("Using feed.isoDate");
 			} else {
 				pubTime = now; //milliseconds
@@ -236,14 +292,15 @@ function processFeeds(feeds) {
 				obj.title += "...";
 			}
 			obj.link = altLink ? altLink : i.link;
-			let sourceURL = feed.link; //feed.title !== "Hacker News" ? feed.link : feed.comments;
+			let sourceURL = feed.res.link; //feed.title !== "Hacker News" ? feed.link : feed.comments;
 			obj.sourceLink = getHostname(sourceURL);
 			obj.aggregatorLink = aggregatorLink;
-			obj.feedTitle = feed.title;
+			obj.feedTitle = feed.res.title;
 
 			//let arrIndex = fetchedDB.find( ({ rssLink }) => rssLink === 'LINK' );
 
-			obj.visible = feed.visible;
+			//visibility handled in getAllFeeds
+			//obj.visible = feed.meta.visible;
 
 			/*
 			console.log("author", obj.author);

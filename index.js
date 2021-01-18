@@ -440,7 +440,7 @@ const setMainWindow = async () => {
 		//fetch and process RSS feeds
 		rsslib
 			.getAllFeeds(feedData.getFeeds(), mainWindow)
-			.then((feeds) => rsslib.processFeeds(feeds))
+			.then((feeds) => rsslib.processFeeds(feeds, feedData.getFeeds()))
 			.then((result) => mainWindow.webContents.send("fromMain", result))
 			.catch((error) => console.error(error.message));
 	});
