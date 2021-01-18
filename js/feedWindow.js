@@ -12,6 +12,7 @@ window.api.receive("sendFeeds", (arr) => {
 	generateTable(table, arr);
 	console.log(`Received ${Object.entries(data)} from main process`);
 });
+
 //0,feed,1,visible,2,domain,3,filterList,4,mode,5,pageHash,6,linkHash,7,timeLastChecked, 8, id
 let fields = ["feed", "filterList", "visible", "id"];
 let editCache = "";

@@ -16,7 +16,6 @@ const unhandled = require("electron-unhandled");
 const debug = require("electron-debug");
 const contextMenu = require("electron-context-menu");
 const config = require("./config");
-//const menu = require("./menu");
 const DataStore = require("./datastore");
 
 const {
@@ -48,7 +47,8 @@ app.setAppUserModelId("com.lot49.rssputin");
 // 	autoUpdater.checkForUpdates();
 // }
 
-const feedData = new DataStore({ name: "links" }); //.json file name at ~/Library/Application\ Support/rssputin/links.json
+//.json file name at ~/Library/Application\ Support/rssputin/rssputinDB.json
+const feedData = new DataStore({ name: "rssputinDB" });
 let initObj = {
 	feed: "Enter valid feed",
 	visible: true,
@@ -66,8 +66,8 @@ feedData.addFeeds(initObj);
 //item.key = crypto.createHash("sha1").update(item.revisedLink).digest("hex");
 //const crypto = require("crypto");
 
-console.log(feedData.getFeeds());
-console.log(app.getPath("userData"));
+//console.log(feedData.getFeeds());
+//console.log(app.getPath("userData"));
 
 // Prevent window from being garbage collected
 let mainWindow;
@@ -186,7 +186,7 @@ app.on("activate", async () => {
 		mainWindow = await createMainWindow();
 	}
 });
-
+/*
 ipcMain.on("toMain", (event, args) => {
 	fs.readFile("test.json", "utf-8", (error, data) => {
 		if (error) {
@@ -197,7 +197,7 @@ ipcMain.on("toMain", (event, args) => {
 		console.log(`File data is ${data}`);
 	});
 });
-
+*/
 ipcMain.on("requestFeeds", (event, args) => {
 	let feeds = feedData.getFeeds();
 	console.log("sending", feeds);
@@ -263,7 +263,7 @@ if (!is.macos) {
 		},
 		aboutMenuItem({
 			icon: path.join(__dirname, "static", "icon.png"),
-			text: "Created by Your Name",
+			text: "Created by Lot 49 Labs",
 		})
 	);
 }
@@ -315,16 +315,6 @@ const macosTemplate = [
 	{
 		role: "fileMenu",
 		submenu: [
-			{
-				label: "Custom",
-				async click() {
-					if (mainWindow) {
-						console.log("mainWindow");
-					} else {
-						console.log("No mainWindow");
-					}
-				},
-			},
 			{
 				label: "Show Feeds",
 				accelerator: "CmdOrCtrl+H",
@@ -420,6 +410,7 @@ if (is.development) {
 
 const setMainWindow = async () => {
 	await app.whenReady().then(async () => {
+		//function to open links in browser
 		const handleRedirect = (e, url) => {
 			if (url !== e.sender.getURL()) {
 				e.preventDefault();
@@ -444,22 +435,6 @@ const setMainWindow = async () => {
 			.then((result) => mainWindow.webContents.send("fromMain", result))
 			.catch((error) => console.error(error.message));
 	});
-	/*
-	Menu.setApplicationMenu(menu);
-	mainWindow = await createMainWindow();
-
-	const favoriteAnimal = config.get("favoriteAnimal");
-	mainWindow.webContents.executeJavaScript(
-		`document.querySelector('header p').textContent = 'Your favorite animal is ${favoriteAnimal}'`
-	);
-	rsslib
-		.getAllFeeds(["https://news.ycombinator.com/rss"])
-		.then((feeds) => rsslib.processFeeds(feeds))
-		.then((result) => mainWindow.webContents.send("fromMain", result))
-		.catch((error) => console.error(error.message));
-		*/
-	//let d = [{ feed: "item" }, { feed2: "items2" }]; //JSON.stringify(data, null, "...");
-	//mainWindow.webContents.send("fromMain", d);
 };
 
 setMainWindow();

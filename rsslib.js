@@ -151,13 +151,6 @@ function processFeeds(feeds, feedData) {
 			return url;
 		}
 	};
-	//TODO rewrite this since there's no DOM here
-	const extractContent = (text) => {
-		//span = document.createElement("span");
-		//var span = document.createElement("span");
-		//span.innerHTML = text;
-		return text; //span.textContent || span.innerText;
-	};
 
 	feeds.forEach((feed, index) => {
 		/*
@@ -271,7 +264,7 @@ function processFeeds(feeds, feedData) {
 				obj.author = i.author;
 			} else if (i.creator !== undefined) {
 				//for arXiv
-				obj.author = extractContent(i.creator);
+				obj.author = i.creator;
 			} else {
 				obj.author = "";
 			}

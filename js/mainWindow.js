@@ -27,6 +27,11 @@ window.api.receive("fromMain", (arr) => {
 });
 window.api.send("toMain", "some data");
 
+const extractContent = (text) => {
+	return new DOMParser().parseFromString(text, "text/html").documentElement
+		.textContent;
+};
+
 //published, author, hoursAgo, title, link, sourceLink, feedTitle
 function generateTableHead(table) {
 	let thead = table.createTHead();
@@ -53,7 +58,8 @@ function generateTable(table, data) {
 		//for (let key in element) {
 		for (let key of columns) {
 			let cell = row.insertCell();
-			let text = document.createTextNode(element[key]);
+			let cleanedText = extractContent(element[key]);
+			let text = document.createTextNode(cleanedText);
 			if (key === "title") {
 				const a = document.createElement("a");
 				a.setAttribute("href", element.link); //'#'

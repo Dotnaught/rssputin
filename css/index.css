@@ -56,6 +56,11 @@ td {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
+td:hover{
+	overflow: visible;
+  	white-space: normal;
+}
 /* A link that has not been visited */
 a:link {
 	color: #039be5;
