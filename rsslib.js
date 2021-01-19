@@ -11,6 +11,7 @@ let parser = new Parser({
 });
 
 const { formatDistance, differenceInHours } = require("date-fns");
+const { fi } = require("date-fns/locale");
 
 const getAllFeeds = async (urlList, win) => {
 	const promises = urlList.map(async (entry) => {
@@ -99,6 +100,25 @@ const getAllFeeds = async (urlList, win) => {
 
 */
 
+function stringToArray(str) {
+	return str.trim().split(" ");
+}
+
+function checkFilter(filteredWords, str) {
+	//if no filter or filter positive, show post
+	console.log(filteredWords);
+	if (filteredWords[0] === "") {
+		console.log("No filter");
+		return true;
+	} else if (filteredWords.some((word) => str.includes(word))) {
+		console.log("found");
+		return true;
+	} else {
+		console.log("No match using '" + str + "'");
+		return false;
+	}
+}
+
 function processFeeds(feeds, feedData) {
 	if (feeds[0] === undefined) feeds.shift();
 
@@ -171,6 +191,9 @@ function processFeeds(feeds, feedData) {
 			console.log("quit at " + index);
 			return;
 		}
+
+		//filter for articles with words in list
+		let filterList = feed.meta.filterList;
 
 		feed.res.items.forEach((i) => {
 			//console.dir(i, { depth: null });
@@ -306,9 +329,14 @@ function processFeeds(feeds, feedData) {
 			let result = differenceInHours(Date.now(), obj.published);
 			//console.log("diff " + result);
 
+			let filteredWords = stringToArray(filterList);
+			let check = checkFilter(filteredWords, obj.title);
+
 			let feedDisplayTimeWindow = 72; //hours
-			if (result < feedDisplayTimeWindow) {
+			if (result < feedDisplayTimeWindow && check) {
 				arr.push(obj);
+			} else {
+				console.log("Filtered " + obj.title);
 			}
 		});
 	});
