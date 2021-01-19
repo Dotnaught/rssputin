@@ -4,7 +4,7 @@
 	"version": "1.0.0",
 	"description": "An RSS headline aggregator",
 	"license": "MIT",
-	"repository": "sindresorhus/electron-boilerplate",
+	"repository": "https://github.com/Dotnaught/rssputin.git",
 	"author": {
 		"name": "Thomas Claburn",
 		"email": "tc@lot49.com",
