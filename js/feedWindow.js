@@ -101,7 +101,7 @@ function generateTable(table, data) {
 				if (key === "feed" && parseInt(element["id"]) === 0) {
 					cell.setAttribute("style", "opacity:0.5; background-color:#00dd33");
 					cell.setAttribute("onfocus", "this.textContent=''");
-					console.log(cell);
+					//console.log(cell);
 				}
 				if (
 					(key === "feed" && parseInt(element["id"]) === 0) ||
@@ -118,16 +118,22 @@ function generateTable(table, data) {
 		}
 		//add button at end
 		let cell = row.insertCell();
+		//connect button to cell id
+		let id = cell.parentNode.lastChild.previousSibling.innerHTML;
+		let color = [];
+		color.push(
+			"w-40 h-10 px-5 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-full focus:shadow-outline hover:bg-indigo-800"
+		);
+		color.push(
+			"w-40 h-10 px-5 text-indigo-100 transition-colors duration-150 bg-red-500 rounded-full focus:shadow-outline hover:bg-red-600"
+		);
 		cell.setAttribute("style", "text-align:center");
 		let newElem = document.createElement("input");
 		cell.appendChild(newElem);
 		newElem.setAttribute("type", "button");
-		newElem.setAttribute(
-			"class",
-			"w-40 h-10 px-5 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-full focus:shadow-outline hover:bg-indigo-800"
-		);
-		//connect button to cell id
-		let id = cell.parentNode.lastChild.previousSibling.innerHTML;
+		let zeroOrOne = parseInt(id) === 0 ? 0 : 1;
+		newElem.setAttribute("class", color[zeroOrOne]);
+
 		//console.log(cell.parentNode.lastChild.previousSibling.innerHTML);
 		newElem.setAttribute("data-reference", id);
 		if (parseInt(id) > 0) {

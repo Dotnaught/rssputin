@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
+
     <meta
       http-equiv="Content-Security-Policy"
       content="script-src 'self' app: 'unsafe-inline'; object-src 'self' app:;"
@@ -20,8 +21,11 @@
 
   <body>
     <p>
-      <b>feed</b>, <b>filterList</b>, and <b>visible</b> fields are editable.
-      <b>Delete Entry</b> will remove the associated feed from the database.
+      The <b>feed</b> field can be edited for new entries. The
+      <b>filterList</b> and <b>visible</b> fields can be edited for existing
+      entries. The <b>filterList</b> should contain space-separated words that
+      must be present in any feed article displayed. <b>Delete Entry</b> will
+      remove the associated feed from the database.
     </p>
     <div style="overflow-x: auto">
       <table style="position: relative">

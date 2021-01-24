@@ -119,7 +119,7 @@ function checkFilter(filteredWords, str) {
 	}
 }
 
-function processFeeds(feeds, feedData) {
+function processFeeds(feeds, timeWindow) {
 	if (feeds[0] === undefined) feeds.shift();
 
 	let arr = [];
@@ -332,11 +332,11 @@ function processFeeds(feeds, feedData) {
 			let filteredWords = stringToArray(filterList);
 			let check = checkFilter(filteredWords, obj.title);
 
-			let feedDisplayTimeWindow = 72; //hours
+			let feedDisplayTimeWindow = timeWindow || 72; //hours
 			if (result < feedDisplayTimeWindow && check) {
 				arr.push(obj);
 			} else {
-				console.log("Filtered " + obj.title);
+				console.log("Filtered " + obj.title + "; check is " + check);
 			}
 		});
 	});

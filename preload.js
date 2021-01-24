@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld("api", {
 			"toMain",
 			"updateBar",
 			"requestFeeds",
+			"setTimeWindow",
 			"setFeedItem",
 			"addFeeds",
 			"deleteFeed",
@@ -36,7 +37,12 @@ contextBridge.exposeInMainWorld("api", {
 		}
 	},
 	receive: (channel, func) => {
-		let validChannels = ["fromMain", "updateBar", "sendFeeds"];
+		let validChannels = [
+			"fromMain",
+			"updateBar",
+			"sendFeeds",
+			"receiveTimeWindow",
+		];
 		if (validChannels.includes(channel)) {
 			console.log(channel);
 			// Deliberately strip event as it includes `sender`

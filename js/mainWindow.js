@@ -11,6 +11,13 @@ window.api.receive("updateBar", (args) => {
 	bar.style.width = progress + "%";
 });
 
+let timeWindow;
+
+window.api.receive("receiveTimeWindow", (receivedTime) => {
+	timeWindow = receivedTime;
+	console.log("timeWindow", timeWindow);
+});
+
 window.api.receive("fromMain", (arr) => {
 	//console.log("Received arr from main process...", arr);
 	//for (const [key, value] of Object.entries(arr)) {
@@ -32,17 +39,86 @@ const extractContent = (text) => {
 		.textContent;
 };
 
+window.addEventListener("DOMContentLoaded", () => {
+	let query = document.getElementById("query");
+	//query.addEventListener("click", displayCancelHide);
+	query.addEventListener("focus", displayCancelShow);
+	query.addEventListener("keyup", searchFunction);
+	query.addEventListener("blur", displayCancelHide);
+
+	let clear = document.querySelector("#clear");
+	clear.addEventListener("click", displayCancelHide);
+	clear.style.visibility = "hidden";
+});
+
+function displayCancelShow() {
+	let cancelButton = document.getElementById("clear");
+	cancelButton.style.visibility = "visible";
+}
+
+function displayCancelHide() {
+	let cancelButton = document.getElementById("clear");
+	cancelButton.style.visibility = "hidden";
+	document.getElementById("query").value = "";
+	searchFunction();
+}
+
+function searchFunction() {
+	let input, filter, tr, td, i;
+	input = document.getElementById("query");
+	console.log(input.value);
+	filter = input.value.toUpperCase();
+	//table = document.getElementById("myTable");
+	tr = table.getElementsByTagName("tr");
+	for (i = 1; i < tr.length; i++) {
+		td = tr[i].getElementsByTagName("td")[1];
+		if (td) {
+			if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+				tr[i].style.display = "";
+			} else {
+				tr[i].style.display = "none";
+			}
+		}
+	}
+}
+
 //published, author, hoursAgo, title, link, sourceLink, feedTitle
 function generateTableHead(table) {
 	let thead = table.createTHead();
 	let row = thead.insertRow();
-	let columns = ["hoursAgo", "title", "author", "sourceLink"];
+	let columns = ["hoursAgo", "Title", "Author", "Source"];
+	let times = [3, 6, 12, 24, 48, 72];
 	//for (let key of data) {
 	for (let key of columns) {
-		let th = document.createElement("th");
-		let text = document.createTextNode(key);
-		th.appendChild(text);
-		row.appendChild(th);
+		if (key === "hoursAgo") {
+			let th = document.createElement("th");
+			let dropdown = document.createElement("select");
+			dropdown.setAttribute("id", "timeDropdown");
+			for (let val of times) {
+				let opt = document.createElement("option");
+				opt.text = `Last ${val} hours`;
+				opt.value = val;
+				if (val === timeWindow) {
+					opt.selected = true;
+				}
+				dropdown.appendChild(opt);
+			}
+			dropdown.addEventListener("change", (e) => {
+				let timeVal = parseInt(document.getElementById("timeDropdown").value);
+				window.api.send("setTimeWindow", timeVal);
+			});
+			//let text = document.createTextNode(key);
+			th.setAttribute("id", "hoursAgo");
+
+			th.appendChild(dropdown);
+
+			row.appendChild(th);
+		} else {
+			let th = document.createElement("th");
+			let text = document.createTextNode(key);
+			th.appendChild(text);
+			row.appendChild(th);
+		}
 	}
 }
 

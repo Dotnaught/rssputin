@@ -25,11 +25,41 @@
       </div>
     </div>
     <div>
-      <h1
-        class="w-full flex-none text-4xl font-bold text-purple-600 mb-1.5 text-center justify-center"
-      >
-        RSSputin
-      </h1>
+      <span>
+        <h1
+          class="w-full flex-none text-4xl font-bold text-purple-600 mb-1.5 text-center justify-center"
+        >
+          RSSputin
+        </h1>
+      </span>
+      <span>
+        <div class="relative flex w-full flex-wrap items-stretch mb-3">
+          <span
+            class="z-10 h-full leading-snug font-normal absolute text-center text-gray-400 absolute bg-transparent rounded text-base items-center justify-center w-8 pl-3 py-3"
+          >
+            <i class="fas fa-lock"></i>
+          </span>
+          <input
+            id="query"
+            type="text"
+            placeholder="Search"
+            class="px-2 py-1 placeholder-gray-400 text-gray-700 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline w-full pl-10"
+          />
+        </div>
+
+        <!--<input placeholder="Search" id="query" type="text" class="validate" /> -->
+
+        <!--- <a id="clear" href="#">Clear</a>-->
+        <button
+          id="clear"
+          class="bg-purple-500 text-white active:bg-purple-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1"
+          type="button"
+          style="transition: all 0.15s ease"
+        >
+          Clear
+        </button>
+      </span>
+
       <table>
         <colgroup>
           <col class="ten" />

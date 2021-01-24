@@ -6,7 +6,6 @@ const {
 	Menu,
 	ipcMain,
 	screen,
-	dialog,
 	shell,
 	globalShortcut,
 } = require("electron");
@@ -17,6 +16,10 @@ const debug = require("electron-debug");
 const contextMenu = require("electron-context-menu");
 const config = require("./config");
 const DataStore = require("./datastore");
+const Store = require("electron-store");
+const store = new Store();
+let timeWindow = store.get("timeWindow") || 72;
+store.set("timeWindow", timeWindow);
 
 const {
 	is,
@@ -204,6 +207,11 @@ ipcMain.on("requestFeeds", (event, args) => {
 	feedWindow.webContents.send("sendFeeds", feeds);
 });
 
+ipcMain.on("setTimeWindow", (event, args) => {
+	store.set("timeWindow", args);
+	console.log("set timeWindow");
+});
+
 ipcMain.on("setFeedItem", (event, args) => {
 	console.log("setFeedItem:");
 	console.log(args);
@@ -317,7 +325,7 @@ const macosTemplate = [
 		submenu: [
 			{
 				label: "Show Feeds",
-				accelerator: "CmdOrCtrl+H",
+				accelerator: "CmdOrCtrl+F",
 				async click() {
 					console.log("Show Feeds");
 
@@ -330,7 +338,7 @@ const macosTemplate = [
 			},
 			{
 				label: "Open Main Window",
-				accelerator: "CmdOrCtrl+W",
+				accelerator: "CmdOrCtrl+D",
 				enabled: false,
 				id: "mainWindow",
 				async click() {
@@ -427,11 +435,12 @@ const setMainWindow = async () => {
 		mainWindow = await createMainWindow();
 		//intercept navigation event so the URL opens in the browser
 		mainWindow.webContents.on("will-navigate", handleRedirect);
-
+		let timeWindow = store.get("timeWindow");
+		mainWindow.webContents.send("receiveTimeWindow", timeWindow);
 		//fetch and process RSS feeds
 		rsslib
 			.getAllFeeds(feedData.getFeeds(), mainWindow)
-			.then((feeds) => rsslib.processFeeds(feeds, feedData.getFeeds()))
+			.then((feeds) => rsslib.processFeeds(feeds, timeWindow))
 			.then((result) => mainWindow.webContents.send("fromMain", result))
 			.catch((error) => console.error(error.message));
 	});
