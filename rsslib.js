@@ -106,12 +106,12 @@ function stringToArray(str) {
 
 function checkFilter(filteredWords, str) {
 	//if no filter or filter positive, show post
-	console.log(filteredWords);
+	//console.log(filteredWords);
 	if (filteredWords[0] === "") {
-		console.log("No filter");
+		//console.log("No filter");
 		return true;
 	} else if (filteredWords.some((word) => str.includes(word))) {
-		console.log("found");
+		console.log("found filtered word");
 		return true;
 	} else {
 		console.log("No match using '" + str + "'");
@@ -336,7 +336,7 @@ function processFeeds(feeds, timeWindow) {
 			if (result < feedDisplayTimeWindow && check) {
 				arr.push(obj);
 			} else {
-				console.log("Filtered " + obj.title + "; check is " + check);
+				//console.log("Filtered " + obj.title + "; check is " + check);
 			}
 		});
 	});

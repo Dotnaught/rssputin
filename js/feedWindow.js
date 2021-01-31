@@ -1,16 +1,16 @@
 let feedData;
 
 window.api.receive("sendFeeds", (arr) => {
-	console.log("Received from main process:");
-	for (const [key, value] of Object.entries(arr)) {
-		console.log(key, value);
-	}
+	//console.log("Received from main process:");
+	//for (const [key, value] of Object.entries(arr)) {
+	//	console.log(key, value);
+	//}
 	let table = document.querySelector("table");
 	let data = Object.keys(arr[0]);
 	feedData = arr;
 	generateTableHead(table, data);
 	generateTable(table, arr);
-	console.log(`Received ${Object.entries(data)} from main process`);
+	//console.log(`Received ${Object.entries(data)} from main process`);
 });
 
 //0,feed,1,visible,2,domain,3,filterList,4,mode,5,pageHash,6,linkHash,7,timeLastChecked, 8, id

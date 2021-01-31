@@ -210,6 +210,9 @@ ipcMain.on("requestFeeds", (event, args) => {
 ipcMain.on("setTimeWindow", (event, args) => {
 	store.set("timeWindow", args);
 	console.log("set timeWindow");
+	if (mainWindow) mainWindow.close();
+	if (feedWindow) feedWindow.close();
+	setMainWindow();
 });
 
 ipcMain.on("setFeedItem", (event, args) => {

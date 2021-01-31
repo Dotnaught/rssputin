@@ -35,6 +35,10 @@ table {
 th {
 	border: 1px solid #ddd;
 	border-collapse: collapse;
+	padding-left: 6px;
+	padding-right: 6px;
+	padding-top: 6px;
+	padding-bottom: 6px;
 }
 td {
 	border: 1px solid #ddd;
@@ -49,8 +53,8 @@ tr:hover {
 td {
 	padding-left: 6px;
 	padding-right: 6px;
-	padding-top: 0px;
-	padding-bottom: 0px;
+	padding-top: 6px;
+	padding-bottom: 6px;
 	max-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -63,7 +67,7 @@ td:hover{
 }
 /* A link that has not been visited */
 a:link {
-	color: #039be5;
+	color: #7345e4;
 }
 /* A link that has been visited */
 a:visited {

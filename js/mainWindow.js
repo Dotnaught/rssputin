@@ -1,7 +1,5 @@
 "use strict";
 
-console.log("Render process loaded");
-
 let table = document.querySelector("table");
 
 window.api.receive("updateBar", (args) => {
@@ -15,7 +13,6 @@ let timeWindow;
 
 window.api.receive("receiveTimeWindow", (receivedTime) => {
 	timeWindow = receivedTime;
-	console.log("timeWindow", timeWindow);
 });
 
 window.api.receive("fromMain", (arr) => {
@@ -143,11 +140,7 @@ function generateTable(table, data) {
 				if (element["title"].length > 159) {
 					a.setAttribute("title", element["title"]);
 				}
-				/*
-				a.onmousedown = function () {
-					openLink(element.link, a);
-				};
-				*/
+				//a.style.color = "#00AA00";
 				a.appendChild(text);
 				cell.appendChild(a);
 			} else if (key === "sourceLink") {

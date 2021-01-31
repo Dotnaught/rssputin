@@ -48,7 +48,7 @@ class DataStore extends Store {
 			this.feeds = [...this.feeds, creationObj];
 			return this.saveFeeds();
 		} else {
-			console.log("Feed already exists");
+			//console.log("Feed already exists");
 		}
 	}
 
