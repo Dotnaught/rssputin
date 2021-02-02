@@ -8,8 +8,7 @@ The app has been setup to ingest some sources that require customization, becaus
 
 Version 1.0 implements RSS/Atom feed aggregation but doesn't include webpage change detection like its predecessor.
 
-
-<img src="https://github.com/Dotnaught/rssputin/blob/main/assets/rssputin_screenshot.png" width="200" />
+<img src="https://github.com/Dotnaught/rssputin/blob/main/assets/rssputin_screenshot.png" width="800" />
 
 ### Prerequisites
 
