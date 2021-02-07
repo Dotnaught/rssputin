@@ -20,16 +20,17 @@ window.api.receive("fromMain", (arr) => {
 	//for (const [key, value] of Object.entries(arr)) {
 	//	console.log(key, value);
 	//}
+	if (!arr) arr = 0;
 	if (arr.length > 0) {
 		let data = Object.keys(arr[0]);
 		generateTableHead(table);
 		generateTable(table, arr);
 		//console.log(`Received ${Object.entries(data)} from main process`);
 	} else {
+		generateNoDataMessage();
 		generateTableHead(table);
 	}
 });
-window.api.send("toMain", "some data");
 
 const extractContent = (text) => {
 	return new DOMParser().parseFromString(text, "text/html").documentElement
@@ -38,10 +39,10 @@ const extractContent = (text) => {
 
 window.addEventListener("DOMContentLoaded", () => {
 	let query = document.getElementById("query");
-	//query.addEventListener("click", displayCancelHide);
 	query.addEventListener("focus", displayCancelShow);
 	query.addEventListener("keyup", searchFunction);
-	query.addEventListener("blur", displayCancelHide);
+	//query.addEventListener("blur", displayCancelHide);
+	//query.addEventListener("click", displayCancelHide);
 
 	let clear = document.querySelector("#clear");
 	clear.addEventListener("click", displayCancelHide);
@@ -63,7 +64,7 @@ function displayCancelHide() {
 function searchFunction() {
 	let input, filter, tr, td, i;
 	input = document.getElementById("query");
-	console.log(input.value);
+	//console.log(input.value);
 	filter = input.value.toUpperCase();
 	//table = document.getElementById("myTable");
 	tr = table.getElementsByTagName("tr");
@@ -76,6 +77,19 @@ function searchFunction() {
 				tr[i].style.display = "none";
 			}
 		}
+	}
+}
+
+function generateNoDataMessage() {
+	let subhead = document.getElementById("subhead");
+	subhead.innerText = "No RSS feeds found in database";
+	window.api.send("openFeedWindow", "data");
+}
+
+function clearNoDataMessage() {
+	let subhead = document.getElementById("subhead");
+	if (subhead.innerText.length > 0) {
+		subhead.innerText = "";
 	}
 }
 
@@ -120,6 +134,7 @@ function generateTableHead(table) {
 }
 
 function generateTable(table, data) {
+	clearNoDataMessage();
 	let columns = ["hoursAgo", "title", "author", "sourceLink"];
 
 	for (let element of data) {

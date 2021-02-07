@@ -65,13 +65,13 @@ td:hover{
 	overflow: visible;
   	white-space: normal;
 }
-/* A link that has not been visited */
+/* A link that has not been visited #7345e4*/
 a:link {
-	color: #7345e4;
+	color: #1E40AF;
 }
 /* A link that has been visited */
 a:visited {
-	color: #024d72;
+	color: #3730A3;
 }
 /* A link that is hovered on */
 a:hover {

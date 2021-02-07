@@ -298,12 +298,15 @@ function processFeeds(feeds, timeWindow) {
 
 			obj.hoursAgo = formatDistance(new Date(obj.published), new Date(now), {
 				addSuffix: true,
-			}); //moment(publishedTime).fromNow(); // for display, issue last updated
+			}); //moment(p ublishedTime).fromNow(); // for display, issue last updated
 			/* if (obj.hoursAgo > now) {
 				obj.hoursAgo = now;
 			} */
-
-			obj.title = i.title.split(". (arXiv")[0].substring(0, 200);
+			if (typeof i.title == "string") {
+				obj.title = i.title.split(". (arXiv")[0].substring(0, 200);
+			} else {
+				obj.title = "Couldn't parse title";
+			}
 			if (obj.title.length === 200) {
 				obj.title += "...";
 			}

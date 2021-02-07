@@ -5,21 +5,22 @@ const { contextBridge, ipcRenderer } = require("electron");
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld("api", {
 	send: (channel, data) => {
-		// whitelist channels
+		// send to main process
 		let validChannels = [
-			"toMain",
 			"updateBar",
 			"requestFeeds",
 			"setTimeWindow",
 			"setFeedItem",
 			"addFeeds",
 			"deleteFeed",
+			"openFeedWindow",
 		];
 		if (validChannels.includes(channel)) {
 			ipcRenderer.send(channel, data);
 		}
 	},
 	receive: (channel, func) => {
+		//receive from main process
 		let validChannels = [
 			"fromMain",
 			"updateBar",
@@ -33,3 +34,4 @@ contextBridge.exposeInMainWorld("api", {
 		}
 	},
 });
+//invoke

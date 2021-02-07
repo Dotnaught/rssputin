@@ -14,8 +14,8 @@ const fs = require("fs");
 const unhandled = require("electron-unhandled");
 const debug = require("electron-debug");
 const contextMenu = require("electron-context-menu");
-const config = require("./config");
-const DataStore = require("./datastore");
+const config = require("./js/config");
+const DataStore = require("./js/datastore");
 const Store = require("electron-store");
 const store = new Store();
 let timeWindow = store.get("timeWindow") || 72;
@@ -30,7 +30,7 @@ const {
 	debugInfo,
 } = require("electron-util");
 
-const rsslib = require("./rsslib");
+const rsslib = require("./js/rsslib");
 
 unhandled();
 debug();
@@ -81,7 +81,7 @@ const createMainWindow = async () => {
 	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
 	globalShortcut.register("CommandOrControl+R", function () {
-		console.log("CommandOrControl+R is pressed");
+		//console.log("CommandOrControl+R is pressed");
 		if (mainWindow) mainWindow.close();
 		if (feedWindow) feedWindow.close();
 		setMainWindow();
@@ -97,7 +97,7 @@ const createMainWindow = async () => {
 			contextIsolation: true, // protect against prototype pollution
 			enableRemoteModule: false, // turn off remote
 			worldSafeExecuteJavaScript: true, //sanitize JavaScript
-			preload: path.join(__dirname, "preload.js"), // use a preload script
+			preload: path.join(__dirname, "./js/preload.js"), // use a preload script
 		},
 	});
 
@@ -114,7 +114,7 @@ const createMainWindow = async () => {
 	win.on("closed", () => {
 		// Dereference the window
 		// For multiple windows store them in an array
-		console.log("closed");
+		//console.log("closed");
 		mainWindow = undefined;
 		const menuItem = menu.getMenuItemById("mainWindow");
 		menuItem.enabled = true;
@@ -137,12 +137,15 @@ const createFeedWindow = async () => {
 			contextIsolation: true, // protect against prototype pollution
 			enableRemoteModule: false, // turn off remote
 			worldSafeExecuteJavaScript: true, //sanitize JavaScript
-			preload: path.join(__dirname, "preload.js"), // use a preload script
+			preload: path.join(__dirname, "./js/preload.js"), // use a preload script
 		},
 	});
 
 	feedWindow.on("ready-to-show", () => {
 		let feeds = feedData.getFeeds();
+		if (feeds === []) {
+			feeds = [initObj];
+		}
 		feedWindow.webContents.send("sendFeeds", feeds);
 		feedWindow.show();
 	});
@@ -233,6 +236,12 @@ ipcMain.on("deleteFeed", (event, args) => {
 	feedData.deleteFeed(args);
 });
 
+ipcMain.on("openFeedWindow", (event, args) => {
+	console.log("openFeedWindow:");
+	console.log(args);
+	createFeedWindow();
+});
+
 ///incorporate menu.js
 const showPreferences = () => {
 	// Show the app's preferences here
@@ -241,11 +250,11 @@ const showPreferences = () => {
 const helpSubmenu = [
 	openUrlMenuItem({
 		label: "Website",
-		url: "https://github.com/sindresorhus/electron-boilerplate",
+		url: "https://github.com/Dotnaught/rssputin",
 	}),
 	openUrlMenuItem({
 		label: "Source Code",
-		url: "https://github.com/sindresorhus/electron-boilerplate",
+		url: "https://github.com/Dotnaught/rssputin",
 	}),
 	{
 		label: "Report an Issue…",
@@ -259,8 +268,8 @@ const helpSubmenu = [
 ${debugInfo()}`;
 
 			openNewGitHubIssue({
-				user: "sindresorhus",
-				repo: "electron-boilerplate",
+				user: "dotnaught",
+				repo: "rssputin",
 				body,
 			});
 		},
@@ -330,7 +339,7 @@ const macosTemplate = [
 				label: "Show Feeds",
 				accelerator: "CmdOrCtrl+F",
 				async click() {
-					console.log("Show Feeds");
+					//console.log("Show Feeds");
 
 					if (mainWindow) {
 						createFeedWindow();
@@ -423,9 +432,10 @@ const setMainWindow = async () => {
 	await app.whenReady().then(async () => {
 		//function to open links in browser
 		const handleRedirect = (e, url) => {
+			//console.log(e.sender.getURL());
 			if (url !== e.sender.getURL()) {
-				e.preventDefault();
 				shell.openExternal(url);
+				e.preventDefault();
 			}
 		};
 

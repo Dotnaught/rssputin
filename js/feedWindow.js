@@ -22,7 +22,7 @@ let cacheData = (e) => {
 };
 
 let editTable = (e) => {
-	console.log(e);
+	//console.log(e);
 	if (e.keyCode === 13) {
 		e.preventDefault();
 		e.target.blur();
@@ -33,25 +33,23 @@ let saveTable = (e) => {
 	let id = e.target.getAttribute("data-id");
 	let key = e.target.getAttribute("data-key");
 	let val, oldval;
-	console.log("id", id);
-	console.log(editCache, e.target.textContent);
+	//console.log("id", id);
+	//console.log(editCache, e.target.textContent);
 
 	if (editCache != e.target.textContent && key === "visible") {
 		val = e.target.textContent == "true"; //get boolean from string
 		oldval = !val;
 		e.target.textContent = val.toString();
 		editCache = "";
-		console.log("sending change", key, val, oldval, id);
+		//console.log("sending change", key, val, oldval, id);
 		saveItem(key, val, oldval, id);
 	} else if (editCache != e.target.textContent && key !== "visible") {
 		val = e.target.textContent;
 		oldval = editCache;
 		editCache = "";
-		console.log("sending change", key, val, oldval, id);
+		//console.log("sending change", key, val, oldval, id);
 		saveItem(key, val, oldval, id);
-	} else {
-		console.log("no change");
-	}
+	} //else no change
 };
 
 function generateTableHead(table, data) {
@@ -73,20 +71,6 @@ function generateTableHead(table, data) {
 }
 
 function generateTable(table, data) {
-	// add placeholder entry above table for adding new feed
-	/*
-	data.unshift({
-		feed: "Add feed here",
-		visible: 1,
-		domain: undefined,
-		filterList: "",
-		mode: undefined,
-		pageHash: undefined,
-		linkHash: undefined,
-		timeLastChecked: 1,
-		id: 0,
-	});
-	*/
 	for (let element of data) {
 		let row = table.insertRow();
 
@@ -164,7 +148,7 @@ function saveItem(key, val, oldval, id) {
 }
 
 function deleteItem(id) {
-	console.log("id", id, typeof id);
+	//console.log("id", id, typeof id);
 	try {
 	} catch (error) {
 		console.error("Generic error: " + error);
@@ -204,12 +188,12 @@ let addRow = (e) => {
 	let newid = feedData.length;
 	let ids = [];
 	feedData.forEach((element) => ids.push(element.id));
-	console.log("ids", ids);
+	//console.log("ids", ids);
 	//[1,3,5]
 
 	for (let i = 0; i <= feedData.length; i++) {
 		if (!ids.includes(i)) {
-			console.log("adjusted id");
+			//console.log("adjusted id");
 			newid = i;
 		}
 	}
@@ -251,7 +235,3 @@ let deleteRow = (e) => {
 		console.error("Generic error: " + error);
 	}
 };
-
-//https://www.techmeme.com/feed.xml
-//https://www.reddit.com/r/technology/new.rss
-//https://blog.google/rss/
