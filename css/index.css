@@ -91,3 +91,20 @@ p {
 	top: 50%;
 	left: 50%;
 }
+
+#tableDiv {
+	overflow-x: auto;
+}
+
+#bar {
+	width: 0%;
+}
+
+#query {
+	margin: 10px;
+}
+
+#clear {
+	transition: all 0.15s ease; 
+	margin: 10px;
+}

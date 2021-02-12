@@ -196,6 +196,7 @@ function processFeeds(feeds, timeWindow) {
 		let filterList = feed.meta.filterList;
 
 		feed.res.items.forEach((i) => {
+			console.log(feed.res.title);
 			//console.dir(i, { depth: null });
 			//console.log(feed.isoDate);
 			//create single array
@@ -255,7 +256,9 @@ function processFeeds(feeds, timeWindow) {
 				}
 				//special case for aggregator with link in RSS.link object
 				altLink =
-					feed.res.title !== "Hacker News" ? altURLs[linkIndex] : i.link;
+					feed.res.title !== "Hacker News" && feed.res.title !== "Lobsters"
+						? altURLs[linkIndex]
+						: i.link;
 				aggregatorLink = altURLs[aggIndex];
 				//process.stdout.write('test');
 				//console.log("altLinks ", altURLs);
