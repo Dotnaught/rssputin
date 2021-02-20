@@ -1,16 +1,11 @@
 let feedData;
 
 window.api.receive("sendFeeds", (arr) => {
-	//console.log("Received from main process:");
-	//for (const [key, value] of Object.entries(arr)) {
-	//	console.log(key, value);
-	//}
 	let table = document.querySelector("table");
 	let data = Object.keys(arr[0]);
 	feedData = arr;
 	generateTableHead(table, data);
 	generateTable(table, arr);
-	//console.log(`Received ${Object.entries(data)} from main process`);
 });
 
 //0,feed,1,visible,2,domain,3,filterList,4,mode,5,pageHash,6,linkHash,7,timeLastChecked, 8, id
@@ -22,7 +17,6 @@ let cacheData = (e) => {
 };
 
 let editTable = (e) => {
-	//console.log(e);
 	if (e.keyCode === 13) {
 		e.preventDefault();
 		e.target.blur();
@@ -33,24 +27,58 @@ let saveTable = (e) => {
 	let id = e.target.getAttribute("data-id");
 	let key = e.target.getAttribute("data-key");
 	let val, oldval;
-	//console.log("id", id);
-	//console.log(editCache, e.target.textContent);
 
 	if (editCache != e.target.textContent && key === "visible") {
 		val = e.target.textContent == "true"; //get boolean from string
 		oldval = !val;
 		e.target.textContent = val.toString();
 		editCache = "";
-		//console.log("sending change", key, val, oldval, id);
 		saveItem(key, val, oldval, id);
-	} else if (editCache != e.target.textContent && key !== "visible") {
-		val = e.target.textContent;
-		oldval = editCache;
-		editCache = "";
-		//console.log("sending change", key, val, oldval, id);
-		saveItem(key, val, oldval, id);
-	} //else no change
+	} else if (editCache != e.target.textContent && key === "feed") {
+		if (validURL(e.target.textContent)) {
+			val = e.target.textContent;
+			oldval = editCache;
+			editCache = "";
+			saveItem(key, val, oldval, id);
+		} else {
+			e.target.textContent = "Invalid URL. Try again.";
+		}
+	} else if (editCache != e.target.textContent && key === "filterList") {
+		let pattern = /^[\w\s]+$/; //Alphanumberic and spaces
+		let result = pattern.test(e.target.textContent);
+
+		if (result || e.target.textContent === "") {
+			val = e.target.textContent.toLowerCase();
+			oldval = editCache;
+			editCache = "";
+			saveItem(key, val, oldval, id);
+		} else {
+			e.target.textContent = "";
+		}
+	}
 };
+
+let flipVal = (e) => {
+	let id = e.target.getAttribute("data-id");
+	let key = e.target.getAttribute("data-key");
+	let val, newval;
+	val = e.target.textContent == "true"; //get boolean from string
+	newval = !val;
+	e.target.textContent = newval.toString();
+	saveItem(key, newval, val, id);
+};
+
+function validURL(string) {
+	let url;
+
+	try {
+		url = new URL(string);
+	} catch (e) {
+		return false;
+	}
+
+	return url.protocol === "http:" || url.protocol === "https:";
+}
 
 function generateTableHead(table, data) {
 	let thead = table.createTHead();
@@ -85,11 +113,9 @@ function generateTable(table, data) {
 				if (key === "feed" && parseInt(element["id"]) === 0) {
 					cell.setAttribute("style", "opacity:0.5; background-color:#00dd33");
 					cell.setAttribute("onfocus", "this.textContent=''");
-					//console.log(cell);
 				}
 				if (
 					(key === "feed" && parseInt(element["id"]) === 0) ||
-					key === "visible" ||
 					key === "filterList"
 				) {
 					cell.setAttribute("contenteditable", true);
@@ -97,7 +123,9 @@ function generateTable(table, data) {
 					cell.addEventListener("blur", saveTable, false);
 					cell.addEventListener("keydown", editTable, false);
 				}
-				//
+				if (key === "visible") {
+					cell.addEventListener("click", flipVal, false);
+				}
 			}
 		}
 		//add button at end
@@ -118,7 +146,6 @@ function generateTable(table, data) {
 		let zeroOrOne = parseInt(id) === 0 ? 0 : 1;
 		newElem.setAttribute("class", color[zeroOrOne]);
 
-		//console.log(cell.parentNode.lastChild.previousSibling.innerHTML);
 		newElem.setAttribute("data-reference", id);
 		if (parseInt(id) > 0) {
 			newElem.setAttribute("value", "Delete Entry");
@@ -148,7 +175,6 @@ function saveItem(key, val, oldval, id) {
 }
 
 function deleteItem(id) {
-	//console.log("id", id, typeof id);
 	try {
 	} catch (error) {
 		console.error("Generic error: " + error);
@@ -188,12 +214,9 @@ let addRow = (e) => {
 	let newid = feedData.length;
 	let ids = [];
 	feedData.forEach((element) => ids.push(element.id));
-	//console.log("ids", ids);
-	//[1,3,5]
 
 	for (let i = 0; i <= feedData.length; i++) {
 		if (!ids.includes(i)) {
-			//console.log("adjusted id");
 			newid = i;
 		}
 	}
@@ -210,7 +233,7 @@ let addRow = (e) => {
 		domain: getOrigin(feed),
 	};
 
-	if (feed !== "" && feed !== "Enter valid feed") {
+	if (validURL(feed)) {
 		try {
 			window.api.send("addFeeds", creationObj);
 			location.reload();

@@ -22,6 +22,7 @@ const getAllFeeds = async (urlList, win) => {
 		) {
 			try {
 				const rssResult = await parser.parseURL(entry.feed);
+
 				const meta = {
 					res: rssResult,
 					meta: entry,
@@ -29,6 +30,7 @@ const getAllFeeds = async (urlList, win) => {
 				return meta;
 			} catch (e) {
 				console.error(e);
+				console.log(entry.feed);
 			}
 		}
 	});
@@ -56,65 +58,18 @@ const getAllFeeds = async (urlList, win) => {
 
 	return progressPromise(promises, update).then((results) => results);
 };
-/*
-
-const getAllFeeds = async (urlList, win) => {
-	const promises = urlList.map(async (entry) => {
-		if (
-			entry.feed !== "" &&
-			entry.feed !== "Enter valid feed" &&
-			entry.visible
-		) {
-			try {
-				const rssResult = await parser.parseURL(entry.feed);
-				return rssResult;
-			} catch (e) {
-				console.error(e);
-			}
-		}
-	});
-
-	//track promise completion
-	function progressPromise(promises, tickCallback) {
-		let len = promises.length;
-		let progress = 0;
-
-		function tick(promise) {
-			promise.then(function () {
-				progress++;
-				//could filter here
-				tickCallback(progress, len);
-			});
-			return promise;
-		}
-
-		return Promise.all(promises.map(tick));
-	}
-	//update progress bar
-	function update(completed, total) {
-		win.webContents.send("updateBar", [completed, total]);
-	}
-
-	return progressPromise(promises, update).then((results) => results);
-};
-
-*/
 
 function stringToArray(str) {
 	return str.trim().split(" ");
 }
 
 function checkFilter(filteredWords, str) {
-	//if no filter or filter positive, show post
-	//console.log(filteredWords);
+	str = str.toLowerCase();
 	if (filteredWords[0] === "") {
-		//console.log("No filter");
 		return true;
 	} else if (filteredWords.some((word) => str.includes(word))) {
-		console.log("found filtered word");
 		return true;
 	} else {
-		console.log("No match using '" + str + "'");
 		return false;
 	}
 }
@@ -123,48 +78,9 @@ function processFeeds(feeds, timeWindow) {
 	if (feeds[0] === undefined) feeds.shift();
 
 	let arr = [];
-	/*
-	let offsets = {
-		"https://www.reddit.com/r/technology/new": 3,
-		"https://www.techmeme.com/feed.xml": 0,
-		"https://news.ycombinator.com/newest": 0,
-	};
-	
-	0: "https://www.theregister.com/headlines.atom"
-	1: "https://news.ycombinator.com/rss"
-	2: "https://export.arxiv.org/rss/cs/new"
-	3: "https://www.reddit.com/r/technology/new.rss"
-	4: "https://blog.google/rss/"
-	5: "https://www.techmeme.com/feed.xml"
-	6: "https://news.google.com/news/rss/headlines/section/topic/TECHNOLOGY"
-	7: "https://lwn.net/headlines/rss"
-	8: "https://hnrss.org/newest"
-	*/
 
-	/*
-	 {
-    res: {
-      items: [Array],
-      title: 'Hacker News',
-      description: 'Links for the intellectually curious, ranked by readers.',
-      link: 'https://news.ycombinator.com/'
-    },
-    meta: {
-      feed: 'https://news.ycombinator.com/rss',
-      visible: true,
-      filterList: '',
-      id: 3,
-      mode: '',
-      pageHash: '',
-      linkHash: '',
-      timeLastChecked: 1610904642221,
-      domain: 'https://news.ycombinator.com'
-    }
-  }
-
-	*/
 	const getHostname = (url) => {
-		// use URL constructor and return hostname
+		// use URL constructor and return hostname,  eg www.example.com
 		if (url != undefined) {
 			return new URL(url).hostname;
 		} else {
@@ -172,23 +88,17 @@ function processFeeds(feeds, timeWindow) {
 		}
 	};
 
+	const getOrigin = (url) => {
+		// use URL constructor and return origin, eg https://www.example.com
+		if (url != undefined) {
+			return new URL(url).origin;
+		} else {
+			return url;
+		}
+	};
+
 	feeds.forEach((feed, index) => {
-		/*
-		The Register keys: items,link,feedUrl,title,lastBuildDate
-		Hacker News keys: items,title,description,link
-		cs updates on arXiv.org keys: items,publisher,title,description,link
-		newest submissions : technology keys: items,link,feedUrl,title,lastBuildDate
-		The Keyword keys: items,feedUrl,image,title,description,link,language,lastBuildDate
-		Techmeme keys: items,title,description,pubDate,link,language,lastBuildDate
-		Technology - Latest - Google News keys: items,title,description,webMaster,generator,link,language,copyright,lastBuildDate
-		LWN.net keys: items,title,description,link
-		Hacker News: Newest keys: items,feedUrl,title,description,generator,link,lastBuildDate,docs
-		*/
-		//console.log("***" + feed.title + " " + Object.keys(feed));
 		if (feed === undefined) {
-			console.log(feeds.length);
-			console.log(feed);
-			console.log("quit at " + index);
 			return;
 		}
 
@@ -196,21 +106,6 @@ function processFeeds(feeds, timeWindow) {
 		let filterList = feed.meta.filterList;
 
 		feed.res.items.forEach((i) => {
-			console.log(feed.res.title);
-			//console.dir(i, { depth: null });
-			//console.log(feed.isoDate);
-			//create single array
-			//filter by time
-			//dispay
-			/*
-			let filterList = feedData.forEach(function (entry) {
-				if (entry.feed === i.link) {
-					return entry.filterList;
-				}
-			});
-
-			console.log("filterList", filterList);
-			*/
 			let altURLs = undefined;
 			let altLink = undefined;
 			let aggregatorLink = undefined;
@@ -226,8 +121,7 @@ function processFeeds(feeds, timeWindow) {
 						)
 					),
 				];
-				// /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi
-				//console.log(feed.title);
+
 				switch (feed.res.title) {
 					//Reddit
 					case "Hacker News":
@@ -260,29 +154,21 @@ function processFeeds(feeds, timeWindow) {
 						? altURLs[linkIndex]
 						: i.link;
 				aggregatorLink = altURLs[aggIndex];
-				//process.stdout.write('test');
-				//console.log("altLinks ", altURLs);
 			}
 			//create the feed object to be displayed
 			let obj = {};
-			//
-			//let now = moment(); //formatISO(new Date());
-			//console.log(now);
+
 			let now = new Date().getTime(); //milliseconds
 
-			//console.log(now);
 			let pubTime; // typeof i.isoDate !== undefined ? i.isoDate : feed.isoDate;
 			if (i.isoDate !== undefined) {
 				pubTime = Date.parse(i.isoDate); //milliseconds
-				//console.log("Using i.isoDate"); //2020-11-21T17:25:28.000Z
 			} else if (feed.res.isoDate !== undefined) {
 				pubTime = Date.parse(feed.res.isoDate); //milliseconds
-				//console.log("Using feed.isoDate");
 			} else {
 				pubTime = now; //milliseconds
 			}
-			//obj.publishedTime = new Date(pubTime); //Date object
-			obj.published = pubTime; //obj.publishedTime.getTime(); //milliseconds
+			obj.published = pubTime;
 
 			if (i.author !== undefined && i.author.name !== undefined) {
 				obj.author = i.author.name[0];
@@ -301,10 +187,7 @@ function processFeeds(feeds, timeWindow) {
 
 			obj.hoursAgo = formatDistance(new Date(obj.published), new Date(now), {
 				addSuffix: true,
-			}); //moment(p ublishedTime).fromNow(); // for display, issue last updated
-			/* if (obj.hoursAgo > now) {
-				obj.hoursAgo = now;
-			} */
+			});
 			if (typeof i.title == "string") {
 				obj.title = i.title.split(". (arXiv")[0].substring(0, 200);
 			} else {
@@ -313,27 +196,15 @@ function processFeeds(feeds, timeWindow) {
 			if (obj.title.length === 200) {
 				obj.title += "...";
 			}
+
 			obj.link = altLink ? altLink : i.link;
-			let sourceURL = feed.res.link; //feed.title !== "Hacker News" ? feed.link : feed.comments;
-			obj.sourceLink = getHostname(sourceURL);
+			let sourceURL = feed.res.link;
+			obj.sourceDisplayText = getHostname(sourceURL);
+			obj.sourceLink = getOrigin(sourceURL);
 			obj.aggregatorLink = aggregatorLink;
 			obj.feedTitle = feed.res.title;
 
-			//let arrIndex = fetchedDB.find( ({ rssLink }) => rssLink === 'LINK' );
-
-			//visibility handled in getAllFeeds
-			//obj.visible = feed.meta.visible;
-
-			/*
-			console.log("author", obj.author);
-			console.log("title", obj.title);
-			console.log("link", obj.link);
-			console.log("source", obj.sourceLink);
-			console.log("feed title", feed.title);
-			console.log("aggregator link", obj.aggregatorLink);
-			*/
 			let result = differenceInHours(Date.now(), obj.published);
-			//console.log("diff " + result);
 
 			let filteredWords = stringToArray(filterList);
 			let check = checkFilter(filteredWords, obj.title);
@@ -341,23 +212,14 @@ function processFeeds(feeds, timeWindow) {
 			let feedDisplayTimeWindow = timeWindow || 72; //hours
 			if (result < feedDisplayTimeWindow && check) {
 				arr.push(obj);
-			} else {
-				//console.log("Filtered " + obj.title + "; check is " + check);
-			}
+			} //otherwise, don't show
 		});
 	});
 
 	arr.sort(function (a, b) {
 		return b.published - a.published;
 	});
-	//add blank feed at head of list
-
 	return arr;
-	//let table = document.querySelector("table");
-	//let data = Object.keys(arr[0]);
-	//generateTableHead(table, data);
-	//generateTable(table, arr);
-	//deactivateSpinner();
 }
 
 module.exports = { getAllFeeds, processFeeds };

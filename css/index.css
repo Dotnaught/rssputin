@@ -108,3 +108,8 @@ p {
 	transition: all 0.15s ease; 
 	margin: 10px;
 }
+
+#timeDropdown {
+	font-weight: bold;
+}
+

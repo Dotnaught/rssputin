@@ -5,7 +5,6 @@ let table = document.querySelector("table");
 window.api.receive("updateBar", (args) => {
 	let bar = document.getElementById("bar");
 	let progress = (args[0] / args[1]) * 100;
-	//console.log(args[0], args[1], progress);
 	bar.style.width = progress + "%";
 });
 
@@ -16,16 +15,11 @@ window.api.receive("receiveTimeWindow", (receivedTime) => {
 });
 
 window.api.receive("fromMain", (arr) => {
-	//console.log("Received arr from main process...", arr);
-	//for (const [key, value] of Object.entries(arr)) {
-	//	console.log(key, value);
-	//}
 	if (!arr) arr = 0;
 	if (arr.length > 0) {
 		let data = Object.keys(arr[0]);
 		generateTableHead(table);
 		generateTable(table, arr);
-		//console.log(`Received ${Object.entries(data)} from main process`);
 	} else {
 		generateNoDataMessage();
 		generateTableHead(table);
@@ -64,7 +58,6 @@ function displayCancelHide() {
 function searchFunction() {
 	let input, filter, tr, td, i;
 	input = document.getElementById("query");
-	//console.log(input.value);
 	filter = input.value.toUpperCase();
 	//table = document.getElementById("myTable");
 	tr = table.getElementsByTagName("tr");
@@ -107,6 +100,7 @@ function generateTableHead(table) {
 			dropdown.setAttribute("id", "timeDropdown");
 			for (let val of times) {
 				let opt = document.createElement("option");
+				opt.id = "timeSelect";
 				opt.text = `Last ${val} hours`;
 				opt.value = val;
 				if (val === timeWindow) {
@@ -146,26 +140,37 @@ function generateTable(table, data) {
 		//for (let key in element) {
 		for (let key of columns) {
 			let cell = row.insertCell();
-			let cleanedText = extractContent(element[key]);
-			let text = document.createTextNode(cleanedText);
 			if (key === "title") {
+				let cleanedText = extractContent(element[key]);
+				let text = document.createTextNode(cleanedText);
 				const a = document.createElement("a");
+
 				a.setAttribute("href", element.link); //'#'
-				a.setAttribute("class", element["sourceLink"]);
-				if (element["title"].length > 159) {
-					a.setAttribute("title", element["title"]);
+				//a.setAttribute("class", element.sourceLink); //TODO
+				if (element.title.length > 159) {
+					a.setAttribute("title", element.title);
 				}
 				//a.style.color = "#00AA00";
 				a.appendChild(text);
 				cell.appendChild(a);
 			} else if (key === "sourceLink") {
+				let cleanedText = extractContent(element.sourceDisplayText);
+				if (cleanedText.startsWith("www.")) {
+					cleanedText = cleanedText.slice(4);
+				}
+				let text = document.createTextNode(cleanedText);
 				const a = document.createElement("a");
-				a.setAttribute("href", element.aggregatorLink);
-				a.setAttribute("class", element["sourceLink"]);
+				let link = element.aggregatorLink
+					? element.aggregatorLink
+					: element.sourceLink;
+				a.setAttribute("href", link);
+				//a.setAttribute("class", element.sourceLink);
 
 				a.appendChild(text);
 				cell.appendChild(a);
 			} else {
+				let cleanedText = extractContent(element[key]);
+				let text = document.createTextNode(cleanedText);
 				cell.appendChild(text);
 			}
 		}

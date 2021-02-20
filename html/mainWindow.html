@@ -38,17 +38,18 @@
       </span>
       <span>
         <div class="relative flex w-full flex-wrap items-stretch mb-3">
+          <!--
           <span
             class="z-10 h-full leading-snug font-normal absolute text-center text-gray-400 absolute bg-transparent rounded text-base items-center justify-center w-8 pl-3 py-3"
           >
             <i class="fas fa-lock"></i>
           </span>
-
+-->
           <input
             id="query"
             type="text"
             placeholder="Search"
-            class="px-3 py-2 placeholder-gray-400 text-gray-700 focus:text-red-600 relative bg-white bg-white rounded text-sm shadow outline-none focus:outline-none focus:shadow-outline pl-10"
+            class="border border-transparent focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent px-3 py-2 placeholder-gray-400 text-gray-700 focus:text-red-600 relative bg-white bg-white rounded-lg text-sm shadow-lg outline-none focus:outline-none focus:shadow-outline pl-2"
           />
           <button
             id="clear"
@@ -74,20 +75,6 @@
         <!--content goes here-->
       </table>
     </div>
-
-    <!--
-    <script>
-      window.api.receive("fromMain", (data) => {
-        console.log("Received from main process:");
-        for (const [key, value] of Object.entries(data)) {
-          console.log(key, value);
-        }
-
-        console.log(`Received ${Object.entries(data)} from main process`);
-      });
-      window.api.send("toMain", "some data");
-	</script>
-	-->
 
     <script src="../js/mainWindow.js"></script>
   </body>

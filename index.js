@@ -66,12 +66,6 @@ let initObj = {
 
 feedData.addFeeds(initObj);
 
-//item.key = crypto.createHash("sha1").update(item.revisedLink).digest("hex");
-//const crypto = require("crypto");
-
-//console.log(feedData.getFeeds());
-//console.log(app.getPath("userData"));
-
 // Prevent window from being garbage collected
 let mainWindow;
 let feedWindow;
@@ -81,7 +75,6 @@ const createMainWindow = async () => {
 	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
 	globalShortcut.register("CommandOrControl+R", function () {
-		//console.log("CommandOrControl+R is pressed");
 		if (mainWindow) mainWindow.close();
 		if (feedWindow) feedWindow.close();
 		setMainWindow();
@@ -107,14 +100,9 @@ const createMainWindow = async () => {
 		menuItem.enabled = false;
 	});
 
-	win.on("reload", () => {
-		console.log("win reload");
-	});
-
 	win.on("closed", () => {
 		// Dereference the window
 		// For multiple windows store them in an array
-		//console.log("closed");
 		mainWindow = undefined;
 		const menuItem = menu.getMenuItemById("mainWindow");
 		menuItem.enabled = true;
@@ -150,10 +138,6 @@ const createFeedWindow = async () => {
 		feedWindow.show();
 	});
 
-	feedWindow.on("reload", () => {
-		feedWindow.reload();
-	});
-
 	feedWindow.on("closed", () => {
 		// Dereference the window
 		// For multiple windows store them in an array
@@ -169,10 +153,6 @@ const createFeedWindow = async () => {
 if (!app.requestSingleInstanceLock()) {
 	app.quit();
 }
-
-app.on("reload", () => {
-	console.log("Reload");
-});
 
 app.on("second-instance", () => {
 	if (mainWindow) {
@@ -192,53 +172,32 @@ app.on("activate", async () => {
 		mainWindow = await createMainWindow();
 	}
 });
-/*
-ipcMain.on("toMain", (event, args) => {
-	fs.readFile("test.json", "utf-8", (error, data) => {
-		if (error) {
-			console.error(error);
-			return;
-		}
-		// Do something with file contents
-		console.log(`File data is ${data}`);
-	});
-});
-*/
+
 ipcMain.on("requestFeeds", (event, args) => {
 	let feeds = feedData.getFeeds();
-	console.log("sending", feeds);
 	feedWindow.webContents.send("sendFeeds", feeds);
 });
 
 ipcMain.on("setTimeWindow", (event, args) => {
 	store.set("timeWindow", args);
-	console.log("set timeWindow");
 	if (mainWindow) mainWindow.close();
 	if (feedWindow) feedWindow.close();
 	setMainWindow();
 });
 
 ipcMain.on("setFeedItem", (event, args) => {
-	console.log("setFeedItem:");
-	console.log(args);
 	feedData.setFeedItem(args);
 });
 
 ipcMain.on("addFeeds", (event, args) => {
-	console.log("addFeeds:");
-	console.log(args);
 	feedData.addFeeds(args);
 });
 
 ipcMain.on("deleteFeed", (event, args) => {
-	console.log("deleteFeed:");
-	console.log(args);
 	feedData.deleteFeed(args);
 });
 
 ipcMain.on("openFeedWindow", (event, args) => {
-	console.log("openFeedWindow:");
-	console.log(args);
 	createFeedWindow();
 });
 
@@ -339,12 +298,8 @@ const macosTemplate = [
 				label: "Show Feeds",
 				accelerator: "CmdOrCtrl+F",
 				async click() {
-					//console.log("Show Feeds");
-
 					if (mainWindow) {
 						createFeedWindow();
-					} else {
-						console.log("No mainWindow");
 					}
 				},
 			},
@@ -432,7 +387,6 @@ const setMainWindow = async () => {
 	await app.whenReady().then(async () => {
 		//function to open links in browser
 		const handleRedirect = (e, url) => {
-			//console.log(e.sender.getURL());
 			if (url !== e.sender.getURL()) {
 				shell.openExternal(url);
 				e.preventDefault();

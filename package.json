@@ -4,7 +4,14 @@
 	"version": "1.0.0",
 	"description": "An RSS headline aggregator",
 	"license": "MIT",
-	"repository": "https://github.com/Dotnaught/rssputin.git",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/Dotnaught/rssputin.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Dotnaught/rssputin/issues"
+	},
+	"homepage": "https://github.com/Dotnaught/rssputin#readme",
 	"author": {
 		"name": "Thomas Claburn",
 		"email": "tc@lot49.com",
@@ -23,6 +30,7 @@
 		"date-fns": "^2.16.1",
 		"electron-context-menu": "^2.3.1",
 		"electron-debug": "^3.0.0",
+		"electron-notarize": "^1.0.0",
 		"electron-store": "^6.0.1",
 		"electron-unhandled": "^3.0.0",
 		"electron-updater": "^4.0.6",
@@ -47,31 +55,38 @@
 	},
 	"build": {
 		"appId": "com.lot49.rssputin",
+		"afterSign": "scripts/notarize.js",
 		"mac": {
-			"category": "public.app-category.social-networking",
-			"darkModeSupport": true
+			"category": "public.app-category.news",
+			"target": [
+				"dmg"
+			  ],
+			"darkModeSupport": false,
+			"hardenedRuntime": true,
+			"gatekeeperAssess": false,
+			"entitlements": "build/entitlements.mac.plist",
+			"entitlementsInherit": "build/entitlements.mac.plist",
+			"type": "distribution",
+			"icon": "build/icon.icns"
 		},
-		"dmg": {
-			"iconSize": 160,
-			"contents": [
-				{
-					"x": 180,
-					"y": 170
-				},
-				{
-					"x": 480,
-					"y": 170,
-					"type": "link",
-					"path": "/Applications"
-				}
-			]
+		"mas": {
+			"entitlements": "build/entitlements.mas.plist",
+			"provisioningProfile": "build/Lot_49_Labs_Mac_Distribution.provisionprofile",
+			"type": "distribution",
+			"category": "public.app-category.news"
 		},
 		"linux": {
 			"target": [
 				"AppImage",
 				"deb"
 			],
-			"category": "Network;Chat"
+			"category": "Network"
 		}
-	}
+	},
+	"publish": [
+		{
+			"provider": "github",
+			"owner": "Dotnaught"
+		}
+	]
 }

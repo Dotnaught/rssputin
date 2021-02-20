@@ -7,7 +7,6 @@ contextBridge.exposeInMainWorld("api", {
 	send: (channel, data) => {
 		// send to main process
 		let validChannels = [
-			"updateBar",
 			"requestFeeds",
 			"setTimeWindow",
 			"setFeedItem",
@@ -28,7 +27,6 @@ contextBridge.exposeInMainWorld("api", {
 			"receiveTimeWindow",
 		];
 		if (validChannels.includes(channel)) {
-			//console.log(channel);
 			// Deliberately strip event as it includes `sender`
 			ipcRenderer.on(channel, (event, ...args) => func(...args));
 		}
