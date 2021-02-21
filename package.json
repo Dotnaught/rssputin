@@ -24,7 +24,7 @@
 		"start": "electron .",
 		"pack": "electron-builder --dir",
 		"dist": "electron-builder --macos --linux --windows --publish never",
-		"publish": "electron-builder --macos --linux --windows --publish onTagOrDraft"
+		"publish": "electron-builder --macos --linux --windows --publish always"
 	},
 	"dependencies": {
 		"date-fns": "^2.16.1",

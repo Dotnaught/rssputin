@@ -60,6 +60,20 @@ function restartApp() {
 	window.api.send("restartApp", []);
 }
 
+window.api.receive("update_available", () => {
+	//window.api.removeAllListeners("update_available");
+	message.innerText = "A new update is available. Downloading now...";
+	notification.classList.remove("hidden");
+});
+
+window.api.receive("update_downloaded", () => {
+	//window.api.removeAllListeners("update_downloaded");
+	message.innerText =
+		"Update Downloaded. It will be installed on restart. Restart now?";
+	restartButton.classList.remove("hidden");
+	notification.classList.remove("hidden");
+});
+
 function displayCancelShow() {
 	let cancelButton = document.getElementById("clear");
 	cancelButton.style.visibility = "visible";
