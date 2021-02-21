@@ -1,5 +1,9 @@
 "use strict";
 
+const notification = document.getElementById("notification");
+const message = document.getElementById("message");
+const restartButton = document.getElementById("restart-button");
+
 let table = document.querySelector("table");
 
 window.api.receive("updateBar", (args) => {
@@ -41,7 +45,20 @@ window.addEventListener("DOMContentLoaded", () => {
 	let clear = document.querySelector("#clear");
 	clear.addEventListener("click", displayCancelHide);
 	clear.style.visibility = "hidden";
+
+	let close = document.querySelector("#close-button");
+	close.addEventListener("click", closeNotification);
+	let restart = document.querySelector("#restart-button");
+	restart.addEventListener("click", restartApp);
 });
+
+function closeNotification() {
+	notification.classList.add("hidden");
+}
+
+function restartApp() {
+	window.api.send("restartApp", []);
+}
 
 function displayCancelShow() {
 	let cancelButton = document.getElementById("clear");

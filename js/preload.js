@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld("api", {
 			"addFeeds",
 			"deleteFeed",
 			"openFeedWindow",
+			"restartApp",
 		];
 		if (validChannels.includes(channel)) {
 			ipcRenderer.send(channel, data);

@@ -10,7 +10,7 @@ const {
 	globalShortcut,
 } = require("electron");
 const fs = require("fs");
-/// const {autoUpdater} = require('electron-updater');
+const { autoUpdater } = require("electron-updater");
 const unhandled = require("electron-unhandled");
 const debug = require("electron-debug");
 const contextMenu = require("electron-context-menu");
@@ -92,6 +92,10 @@ const createMainWindow = async () => {
 			worldSafeExecuteJavaScript: true, //sanitize JavaScript
 			preload: path.join(__dirname, "./js/preload.js"), // use a preload script
 		},
+	});
+
+	win.once("ready-to-show", () => {
+		autoUpdater.checkForUpdatesAndNotify();
 	});
 
 	win.on("ready-to-show", () => {
@@ -199,6 +203,18 @@ ipcMain.on("deleteFeed", (event, args) => {
 
 ipcMain.on("openFeedWindow", (event, args) => {
 	createFeedWindow();
+});
+
+ipcMain.on("restartApp", (event, args) => {
+	autoUpdater.quitAndInstall();
+});
+
+autoUpdater.on("update-available", () => {
+	mainWindow.webContents.send("update_available", []);
+});
+
+autoUpdater.on("update-downloaded", () => {
+	mainWindow.webContents.send("update_downloaded", []);
 });
 
 ///incorporate menu.js

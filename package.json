@@ -23,15 +23,15 @@
 		"test": "npm run lint",
 		"start": "electron .",
 		"pack": "electron-builder --dir",
-		"dist": "electron-builder --macos --linux --windows",
-		"release": "np"
+		"dist": "electron-builder --macos --linux --windows --publish never",
+		"publish": "electron-builder --macos --linux --windows --publish onTagOrDraft"
 	},
 	"dependencies": {
 		"date-fns": "^2.16.1",
 		"electron-context-menu": "^2.3.1",
 		"electron-debug": "^3.0.0",
 		"electron-notarize": "^1.0.0",
-		"electron-store": "^6.0.1",
+		"electron-store": "^7.0.2",
 		"electron-unhandled": "^3.0.0",
 		"electron-updater": "^4.0.6",
 		"electron-util": "^0.14.2",
@@ -40,18 +40,13 @@
 	"devDependencies": {
 		"electron": "^11.1.1",
 		"electron-builder": "^22.9.1",
-		"np": "^7.2.0",
-		"xo": "^0.37.1"
+		"xo": "^0.38.1"
 	},
 	"xo": {
 		"envs": [
 			"node",
 			"browser"
 		]
-	},
-	"np": {
-		"publish": false,
-		"releaseDraft": false
 	},
 	"build": {
 		"appId": "com.lot49.rssputin",
@@ -60,7 +55,7 @@
 			"category": "public.app-category.news",
 			"target": [
 				"dmg"
-			  ],
+			],
 			"darkModeSupport": false,
 			"hardenedRuntime": true,
 			"gatekeeperAssess": false,
