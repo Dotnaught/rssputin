@@ -1,6 +1,6 @@
 "use strict";
 
-const { BrowserWindow } = require("electron");
+//const { BrowserWindow } = require("electron");
 
 const Parser = require("rss-parser");
 let parser = new Parser({
@@ -11,7 +11,7 @@ let parser = new Parser({
 });
 
 const { formatDistance, differenceInHours } = require("date-fns");
-const { fi } = require("date-fns/locale");
+//const { fi } = require("date-fns/locale");
 
 const getAllFeeds = async (urlList, win) => {
 	const promises = urlList.map(async (entry) => {
@@ -30,7 +30,7 @@ const getAllFeeds = async (urlList, win) => {
 				return meta;
 			} catch (e) {
 				console.error(e);
-				console.log(entry.feed);
+				console.log(`Error at ${entry.feed}`);
 			}
 		}
 	});
@@ -97,7 +97,7 @@ function processFeeds(feeds, timeWindow) {
 		}
 	};
 
-	feeds.forEach((feed, index) => {
+	feeds.forEach((feed) => {
 		if (feed === undefined) {
 			return;
 		}
@@ -197,7 +197,7 @@ function processFeeds(feeds, timeWindow) {
 				obj.title += "...";
 			}
 
-			obj.link = altLink ? altLink : i.link;
+			obj.link = altLink && altLink.startsWith("http") ? altLink : i.link;
 			let sourceURL = feed.res.link;
 			obj.sourceDisplayText = getHostname(sourceURL);
 			obj.sourceLink = getOrigin(sourceURL);

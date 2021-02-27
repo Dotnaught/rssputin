@@ -21,7 +21,7 @@ window.api.receive("receiveTimeWindow", (receivedTime) => {
 window.api.receive("fromMain", (arr) => {
 	if (!arr) arr = 0;
 	if (arr.length > 0) {
-		let data = Object.keys(arr[0]);
+		//let data = Object.keys(arr[0]);
 		generateTableHead(table);
 		generateTable(table, arr);
 	} else {
@@ -139,7 +139,7 @@ function generateTableHead(table) {
 				}
 				dropdown.appendChild(opt);
 			}
-			dropdown.addEventListener("change", (e) => {
+			dropdown.addEventListener("change", () => {
 				let timeVal = parseInt(document.getElementById("timeDropdown").value);
 				window.api.send("setTimeWindow", timeVal);
 			});

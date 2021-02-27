@@ -1,14 +1,19 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 "use strict";
 const path = require("path");
 const {
 	app,
 	BrowserWindow,
 	Menu,
+	dialog,
 	ipcMain,
 	screen,
 	shell,
 	globalShortcut,
+	Notification,
 } = require("electron");
+
 const fs = require("fs");
 const { autoUpdater } = require("electron-updater");
 const unhandled = require("electron-unhandled");
@@ -18,7 +23,7 @@ const config = require("./js/config");
 const DataStore = require("./js/datastore");
 const Store = require("electron-store");
 const store = new Store();
-let timeWindow = store.get("timeWindow") || 72;
+const timeWindow = store.get("timeWindow") || 72;
 store.set("timeWindow", timeWindow);
 
 const {
@@ -30,7 +35,10 @@ const {
 	debugInfo,
 } = require("electron-util");
 
+const userData = app.getPath("userData") + "/rssputinDB.json";
+//const rssdb = require(userData);
 const rsslib = require("./js/rsslib");
+const jsonSchema = require("./js/schema");
 
 unhandled();
 debug();
@@ -39,20 +47,27 @@ contextMenu();
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId("com.lot49.rssputin");
 
-// Uncomment this before publishing your first version.
-// It's commented out as it throws an error if there are no published versions.
-// if (!is.development) {
-// 	const FOUR_HOURS = 1000 * 60 * 60 * 4;
-// 	setInterval(() => {
-// 		autoUpdater.checkForUpdates();
-// 	}, FOUR_HOURS);
-//
-// 	autoUpdater.checkForUpdates();
-// }
+//const { config } = JSON.parse(fs.readFileSync('../config.json', 'utf8'))
 
-//.json file name at ~/Library/Application\ Support/rssputin/rssputinDB.json
+const schema = jsonSchema.schema;
+//const testData = jsonSchema.testData;
+/*
+const resp = fs.readFileSync(userData, "utf8", (err, data) => {
+	if (err) throw err;
+	return data;
+});
+const rssdb = JSON.parse(resp);
+*/
+const Ajv = require("ajv");
+const ajv = new Ajv();
+const validate = ajv.compile(schema);
+//const valid = validate(rssdb);
+//if (!valid) console.log(validate.errors);
+
+// .json file name at ~/Library/Application\ Support/rssputin/rssputinDB.json
 const feedData = new DataStore({ name: "rssputinDB" });
-let initObj = {
+
+const initObject = {
 	feed: "Enter valid feed",
 	visible: true,
 	domain: "",
@@ -64,7 +79,7 @@ let initObj = {
 	id: 0,
 };
 
-feedData.addFeeds(initObj);
+feedData.addFeeds(initObject);
 
 // Prevent window from being garbage collected
 let mainWindow;
@@ -74,9 +89,15 @@ let menu;
 const createMainWindow = async () => {
 	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
-	globalShortcut.register("CommandOrControl+R", function () {
-		if (mainWindow) mainWindow.close();
-		if (feedWindow) feedWindow.close();
+	globalShortcut.register("CommandOrControl+R", () => {
+		if (mainWindow) {
+			mainWindow.close();
+		}
+
+		if (feedWindow) {
+			feedWindow.close();
+		}
+
 		setMainWindow();
 	});
 
@@ -86,11 +107,11 @@ const createMainWindow = async () => {
 		width,
 		height,
 		webPreferences: {
-			nodeIntegration: false, // is default value after Electron v5
-			contextIsolation: true, // protect against prototype pollution
-			enableRemoteModule: false, // turn off remote
-			worldSafeExecuteJavaScript: true, //sanitize JavaScript
-			preload: path.join(__dirname, "./js/preload.js"), // use a preload script
+			nodeIntegration: false, // Is default value after Electron v5
+			contextIsolation: true, // Protect against prototype pollution
+			enableRemoteModule: false, // Turn off remote
+			worldSafeExecuteJavaScript: true, // Sanitize JavaScript
+			preload: path.join(__dirname, "./js/preload.js"), // Use a preload script
 		},
 	});
 
@@ -122,22 +143,23 @@ const createFeedWindow = async () => {
 	feedWindow = new BrowserWindow({
 		title: "Edit Feeds",
 		show: true,
-		width: width,
+		width,
 		height: height / 2,
 		webPreferences: {
-			nodeIntegration: false, // is default value after Electron v5
-			contextIsolation: true, // protect against prototype pollution
-			enableRemoteModule: false, // turn off remote
-			worldSafeExecuteJavaScript: true, //sanitize JavaScript
-			preload: path.join(__dirname, "./js/preload.js"), // use a preload script
+			nodeIntegration: false, // Is default value after Electron v5
+			contextIsolation: true, // Protect against prototype pollution
+			enableRemoteModule: false, // Turn off remote
+			worldSafeExecuteJavaScript: true, // Sanitize JavaScript
+			preload: path.join(__dirname, "./js/preload.js"), // Use a preload script
 		},
 	});
 
 	feedWindow.on("ready-to-show", () => {
 		let feeds = feedData.getFeeds();
 		if (feeds === []) {
-			feeds = [initObj];
+			feeds = [initObject];
 		}
+
 		feedWindow.webContents.send("sendFeeds", feeds);
 		feedWindow.show();
 	});
@@ -160,7 +182,10 @@ if (!app.requestSingleInstanceLock()) {
 
 app.on("second-instance", () => {
 	if (mainWindow) {
-		if (mainWindow.isMinimized()) mainWindow.restore();
+		if (mainWindow.isMinimized()) {
+			mainWindow.restore();
+		}
+
 		mainWindow.show();
 	}
 });
@@ -178,14 +203,20 @@ app.on("activate", async () => {
 });
 
 ipcMain.on("requestFeeds", (event, args) => {
-	let feeds = feedData.getFeeds();
+	const feeds = feedData.getFeeds();
 	feedWindow.webContents.send("sendFeeds", feeds);
 });
 
 ipcMain.on("setTimeWindow", (event, args) => {
 	store.set("timeWindow", args);
-	if (mainWindow) mainWindow.close();
-	if (feedWindow) feedWindow.close();
+	if (mainWindow) {
+		mainWindow.close();
+	}
+
+	if (feedWindow) {
+		feedWindow.close();
+	}
+
 	setMainWindow();
 });
 
@@ -217,10 +248,106 @@ autoUpdater.on("update-downloaded", () => {
 	mainWindow.webContents.send("update_downloaded", []);
 });
 
-///incorporate menu.js
+/// incorporate menu.js
 const showPreferences = () => {
 	// Show the app's preferences here
 };
+
+function showNotification(title, body) {
+	const notification = {
+		title: title,
+		body: body,
+		silent: true,
+		timeoutType: "default",
+	};
+	new Notification(notification).show();
+}
+
+function exportDB() {
+	console.log("Starting export...");
+
+	dialog
+		.showSaveDialog(mainWindow, {
+			properties: ["openFile", "openDirectory"],
+			filters: [{ name: "JSON", extensions: ["json"] }],
+			buttonLabel: "Export Feeds",
+			defaultPath: userData,
+		})
+		.then((result) => {
+			//console.log(result.canceled);
+			//console.log(result.filePath);
+			//console.log(userData);
+			if (result.filePath === undefined || result.canceled) {
+				console.log("No file path defined or cancelled");
+				return;
+			}
+
+			fs.copyFile(userData, result.filePath, (err) => {
+				if (err) {
+					//console.log("An error ocurred creating the file " + err.message);
+					showNotification("Something went wrong...", err.message);
+				}
+				//console.log("The file has been succesfully saved");
+				showNotification("Success!", "Database exported.");
+			});
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+}
+
+function importDB() {
+	console.log("Starting import...");
+
+	dialog
+		.showOpenDialog(mainWindow, {
+			properties: ["openFile", "openDirectory"],
+			filters: [{ name: "JSON", extensions: ["json"] }],
+			defaultPath: app.getPath("downloads") + "/rssputinDB.json",
+		})
+		.then((result) => {
+			//console.log(result.canceled);
+			//console.log(result.filePath);
+			//console.log(result.filePaths);
+			if (
+				result.filePaths === undefined ||
+				!fs.existsSync(result.filePaths[0] || result.canceled)
+			) {
+				console.log("No file found");
+				return;
+			} else {
+				//write file
+				let importFile = result.filePaths[0];
+				let resp = fs.readFileSync(importFile, "utf8", (err, data) => {
+					if (err) throw err;
+					return data;
+				});
+				let fileContents = JSON.parse(resp);
+				let check = validate(fileContents);
+				if (!check) {
+					console.log(validate.errors);
+				} else {
+					console.log("write file");
+					fs.copyFile(importFile, userData, (err) => {
+						if (err) {
+							showNotification("Something went wrong...", err.message);
+						}
+						showNotification("Success!", "Database imported.");
+						if (mainWindow) {
+							mainWindow.close();
+						}
+						if (feedWindow) {
+							feedWindow.close();
+						}
+						setMainWindow();
+					});
+				}
+			}
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+}
 
 const helpSubmenu = [
 	openUrlMenuItem({
@@ -320,6 +447,33 @@ const macosTemplate = [
 				},
 			},
 			{
+				type: "separator",
+			},
+			{
+				label: "Import Database",
+				accelerator: "CmdOrCtrl+=",
+				async click() {
+					if (mainWindow) {
+						importDB();
+					}
+				},
+			},
+			{
+				label: "Export Database",
+				accelerator: "CmdOrCtrl+B",
+				async click() {
+					if (mainWindow) {
+						exportDB();
+					}
+				},
+			},
+			{
+				type: "separator",
+			},
+			{
+				type: "separator",
+			},
+			{
 				label: "Open Main Window",
 				accelerator: "CmdOrCtrl+D",
 				enabled: false,
@@ -397,30 +551,30 @@ if (is.development) {
 		submenu: debugSubmenu,
 	});
 }
-///menu.js
+/// menu.js
 
 const setMainWindow = async () => {
 	await app.whenReady().then(async () => {
-		//function to open links in browser
-		const handleRedirect = (e, url) => {
-			if (url !== e.sender.getURL()) {
+		// Function to open links in browser
+		const handleRedirect = (event, url) => {
+			if (url !== event.sender.getURL()) {
 				shell.openExternal(url);
-				e.preventDefault();
+				event.preventDefault();
 			}
 		};
 
-		//setup the menu
+		// Setup the menu
 		menu = Menu.buildFromTemplate(template);
 		Menu.setApplicationMenu(menu);
 		const menuItem = menu.getMenuItemById("mainWindow");
 		menuItem.enabled = false;
-		//create the mainWindow
+		// Create the mainWindow
 		mainWindow = await createMainWindow();
-		//intercept navigation event so the URL opens in the browser
+		// Intercept navigation event so the URL opens in the browser
 		mainWindow.webContents.on("will-navigate", handleRedirect);
-		let timeWindow = store.get("timeWindow");
+		const timeWindow = store.get("timeWindow");
 		mainWindow.webContents.send("receiveTimeWindow", timeWindow);
-		//fetch and process RSS feeds
+		// Fetch and process RSS feeds
 		rsslib
 			.getAllFeeds(feedData.getFeeds(), mainWindow)
 			.then((feeds) => rsslib.processFeeds(feeds, timeWindow))

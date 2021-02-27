@@ -29,6 +29,8 @@ npm install
 npm start
 ```
 
+Or head over to the [releases](https://github.com/Dotnaught/rssputin/releases) page.
+
 The app should present a blank page on startup. Add new feeds via the File -> Show Feeds menu. Make sure they're valid feeds.
 
 ## Deployment
