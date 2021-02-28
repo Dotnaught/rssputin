@@ -240,12 +240,24 @@ ipcMain.on("restartApp", (event, args) => {
 	autoUpdater.quitAndInstall();
 });
 
-autoUpdater.on("update-available", () => {
-	mainWindow.webContents.send("update_available", []);
+autoUpdater.on("update-downloaded", (event, releaseNotes, releaseName) => {
+	const dialogOpts = {
+		type: "info",
+		buttons: ["Restart", "Not Now. On next Restart"],
+		title: "Update",
+		message: process.platform === "win32" ? releaseNotes : releaseName,
+		detail:
+			"A new version of RSSputin has been downloaded. Restart now to update.",
+	};
+
+	dialog.showMessageBox(dialogOpts).then((returnValue) => {
+		if (returnValue.response === 0) autoUpdater.quitAndInstall();
+	});
 });
 
-autoUpdater.on("update-downloaded", () => {
-	mainWindow.webContents.send("update_downloaded", []);
+autoUpdater.on("error", (message) => {
+	console.error("Someting went wrote with an automatic update.");
+	console.error(message);
 });
 
 /// incorporate menu.js

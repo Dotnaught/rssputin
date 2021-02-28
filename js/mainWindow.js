@@ -1,8 +1,8 @@
 "use strict";
 
 const notification = document.getElementById("notification");
-const message = document.getElementById("message");
-const restartButton = document.getElementById("restart-button");
+//const message = document.getElementById("message");
+//const restartButton = document.getElementById("restart-button");
 
 let table = document.querySelector("table");
 
@@ -59,7 +59,7 @@ function closeNotification() {
 function restartApp() {
 	window.api.send("restartApp", []);
 }
-
+/*
 window.api.receive("update_available", () => {
 	//window.api.removeAllListeners("update_available");
 	message.innerText = "A new update is available. Downloading now...";
@@ -73,7 +73,7 @@ window.api.receive("update_downloaded", () => {
 	restartButton.classList.remove("hidden");
 	notification.classList.remove("hidden");
 });
-
+*/
 function displayCancelShow() {
 	let cancelButton = document.getElementById("clear");
 	cancelButton.style.visibility = "visible";
