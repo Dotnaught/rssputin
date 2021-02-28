@@ -49,7 +49,7 @@
 		"mac": {
 			"category": "public.app-category.news",
 			"target": [
-				"dmg"
+				"zip", "dmg"
 			],
 			"darkModeSupport": false,
 			"hardenedRuntime": true,
