@@ -1,6 +1,6 @@
 "use strict";
 
-const notification = document.getElementById("notification");
+//const notification = document.getElementById("notification");
 //const message = document.getElementById("message");
 //const restartButton = document.getElementById("restart-button");
 
@@ -45,13 +45,14 @@ window.addEventListener("DOMContentLoaded", () => {
 	let clear = document.querySelector("#clear");
 	clear.addEventListener("click", displayCancelHide);
 	clear.style.visibility = "hidden";
-
+	/*
 	let close = document.querySelector("#close-button");
 	close.addEventListener("click", closeNotification);
 	let restart = document.querySelector("#restart-button");
 	restart.addEventListener("click", restartApp);
+	*/
 });
-
+/*
 function closeNotification() {
 	notification.classList.add("hidden");
 }
@@ -59,6 +60,8 @@ function closeNotification() {
 function restartApp() {
 	window.api.send("restartApp", []);
 }
+*/
+
 /*
 window.api.receive("update_available", () => {
 	//window.api.removeAllListeners("update_available");

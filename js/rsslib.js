@@ -6,6 +6,7 @@ const Parser = require("rss-parser");
 let parser = new Parser({
 	customFields: {
 		feed: [["dc:date", "isoDate"]],
+		item: ["pubDate"],
 	},
 	timeout: 10000,
 });
@@ -23,11 +24,12 @@ const getAllFeeds = async (urlList, win) => {
 			try {
 				const rssResult = await parser.parseURL(entry.feed);
 
-				const meta = {
+				const combinedResults = {
 					res: rssResult,
 					meta: entry,
 				};
-				return meta;
+				//console.log(rssResult);
+				return combinedResults;
 			} catch (e) {
 				console.error(e);
 				console.log(`Error at ${entry.feed}`);
@@ -106,11 +108,14 @@ function processFeeds(feeds, timeWindow) {
 		let filterList = feed.meta.filterList;
 
 		feed.res.items.forEach((i) => {
+			if (feed.res.title === "newest submissions : technology") {
+				//console.log(JSON.stringify(feed.res, null, 2));
+			}
 			let altURLs = undefined;
 			let altLink = undefined;
 			let aggregatorLink = undefined;
-			//&& feed.title !== "Hacker News"
-			if (i.content) {
+			//catch NLRB
+			if (i.content && feed.res.title !== "News Releases") {
 				let linkIndex;
 				let aggIndex;
 				altURLs = [
@@ -150,10 +155,15 @@ function processFeeds(feeds, timeWindow) {
 				}
 				//special case for aggregator with link in RSS.link object
 				altLink =
-					feed.res.title !== "Hacker News" && feed.res.title !== "Lobsters"
+					feed.res.title !== "Hacker News" &&
+					feed.res.title !== "Lobsters" &&
+					feed.res.title !== "The Keyword"
 						? altURLs[linkIndex]
 						: i.link;
 				aggregatorLink = altURLs[aggIndex];
+				if (feed.res.title === "The Keyword") {
+					aggregatorLink = undefined;
+				}
 			}
 			//create the feed object to be displayed
 			let obj = {};
@@ -161,6 +171,7 @@ function processFeeds(feeds, timeWindow) {
 			let now = new Date().getTime(); //milliseconds
 
 			let pubTime; // typeof i.isoDate !== undefined ? i.isoDate : feed.isoDate;
+
 			if (i.isoDate !== undefined) {
 				pubTime = Date.parse(i.isoDate); //milliseconds
 			} else if (feed.res.isoDate !== undefined) {
