@@ -108,14 +108,11 @@ function processFeeds(feeds, timeWindow) {
 		let filterList = feed.meta.filterList;
 
 		feed.res.items.forEach((i) => {
-			if (feed.res.title === "newest submissions : technology") {
-				//console.log(JSON.stringify(feed.res, null, 2));
-			}
 			let altURLs = undefined;
 			let altLink = undefined;
 			let aggregatorLink = undefined;
 			//catch NLRB
-			if (i.content && feed.res.title !== "News Releases") {
+			if (i.content && feed.meta.mode === "aggregator") {
 				let linkIndex;
 				let aggIndex;
 				altURLs = [
@@ -128,7 +125,6 @@ function processFeeds(feeds, timeWindow) {
 				];
 
 				switch (feed.res.title) {
-					//Reddit
 					case "Hacker News":
 						linkIndex = 0; //not used
 						aggIndex = 0;
@@ -137,10 +133,10 @@ function processFeeds(feeds, timeWindow) {
 						linkIndex = 3;
 						aggIndex = 0;
 						break;
-					case "LWN.net":
-						linkIndex = 2;
-						aggIndex = 0;
-						break;
+					//case "LWN.net":
+					//	linkIndex = 2;
+					//	aggIndex = 0;
+					//	break;
 					case "Techmeme":
 						linkIndex = 0;
 						aggIndex = 2;
@@ -154,16 +150,22 @@ function processFeeds(feeds, timeWindow) {
 						aggIndex = 1;
 				}
 				//special case for aggregator with link in RSS.link object
-				altLink =
-					feed.res.title !== "Hacker News" &&
+
+				/*feed.res.title !== "Hacker News" &&
 					feed.res.title !== "Lobsters" &&
-					feed.res.title !== "The Keyword"
-						? altURLs[linkIndex]
-						: i.link;
+					feed.res.title !== "IBM PSIRT Blog" &&
+					feed.res.title !== "The Keyword" &&
+					feed.res.title !== "Newsroom – About Facebook" */
+				altLink = feed.meta.mode === "aggregator" ? altURLs[linkIndex] : i.link;
 				aggregatorLink = altURLs[aggIndex];
-				if (feed.res.title === "The Keyword") {
+				/*
+				if (
+					feed.res.title === "The Keyword" ||
+					feed.res.title === "IBM PSIRT Blog"
+				) {
 					aggregatorLink = undefined;
 				}
+				*/
 			}
 			//create the feed object to be displayed
 			let obj = {};
@@ -181,6 +183,8 @@ function processFeeds(feeds, timeWindow) {
 			}
 			obj.published = pubTime;
 
+			obj.pubtype = feed.meta.mode;
+
 			if (i.author !== undefined && i.author.name !== undefined) {
 				obj.author = i.author.name[0];
 			} else if (i.author !== undefined) {
@@ -195,6 +199,9 @@ function processFeeds(feeds, timeWindow) {
 			if (obj.author.includes("/u/")) {
 				obj.author = obj.author.split("/u/").pop();
 			}
+			if (obj.author.startsWith("By ")) {
+				obj.author = obj.author.split("By ").pop();
+			}
 
 			obj.hoursAgo = formatDistance(new Date(obj.published), new Date(now), {
 				addSuffix: true,
@@ -208,7 +215,7 @@ function processFeeds(feeds, timeWindow) {
 				obj.title += "...";
 			}
 
-			obj.link = altLink && altLink.startsWith("http") ? altLink : i.link;
+			obj.link = altLink && feed.meta.mode === "aggregator" ? altLink : i.link; //altLink && altLink.startsWith("http") ? altLink : i.link;
 			let sourceURL = feed.res.link;
 			obj.sourceDisplayText = getHostname(sourceURL);
 			obj.sourceLink = getOrigin(sourceURL);

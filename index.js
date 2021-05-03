@@ -14,6 +14,11 @@ const {
 	Notification,
 } = require("electron");
 
+// Prevent multiple instances of the app
+if (!app.requestSingleInstanceLock()) {
+	app.quit();
+}
+
 const fs = require("fs");
 const { autoUpdater } = require("electron-updater");
 const unhandled = require("electron-unhandled");
@@ -72,11 +77,12 @@ const initObject = {
 	visible: true,
 	domain: "",
 	filterList: "",
-	mode: "",
+	mode: "publication",
 	pageHash: "",
 	linkHash: "",
 	timeLastChecked: Date.now(),
 	id: 0,
+	action: false,
 };
 
 feedData.addFeeds(initObject);
@@ -174,11 +180,6 @@ const createFeedWindow = async () => {
 
 	return feedWindow;
 };
-
-// Prevent multiple instances of the app
-if (!app.requestSingleInstanceLock()) {
-	app.quit();
-}
 
 app.on("second-instance", () => {
 	if (mainWindow) {

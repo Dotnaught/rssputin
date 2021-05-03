@@ -17,6 +17,7 @@ workspace.js
 entitlements.mac.plist
 entitlements.mas.plist
 *.p12
+launch.json
 
 
 

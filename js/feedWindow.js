@@ -8,8 +8,8 @@ window.api.receive("sendFeeds", (arr) => {
 	generateTable(table, arr);
 });
 
-//0,feed,1,visible,2,domain,3,filterList,4,mode,5,pageHash,6,linkHash,7,timeLastChecked, 8, id
-let fields = ["feed", "filterList", "visible", "id"];
+//0,feed,1,visible,2,domain,3,filterList,4,mode,5,pageHash,6,linkHash,7,timeLastChecked, 8, id, action
+//let fields = ["feed", "visible", "filterList", "mode", "id", "action"];
 let editCache = "";
 
 let cacheData = (e) => {
@@ -58,12 +58,22 @@ let saveTable = (e) => {
 	}
 };
 
-let flipVal = (e) => {
+let flipBool = (e) => {
 	let id = e.target.getAttribute("data-id");
 	let key = e.target.getAttribute("data-key");
 	let val, newval;
-	val = e.target.textContent == "true"; //get boolean from string
+	val = e.target.textContent === "true"; //get boolean from string
 	newval = !val;
+	e.target.textContent = newval.toString();
+	saveItem(key, newval, val, id);
+};
+
+let flipString = (e) => {
+	let id = e.target.getAttribute("data-id");
+	let key = e.target.getAttribute("data-key");
+	let val, newval;
+	val = e.target.textContent;
+	newval = val === "publication" ? "aggregator" : "publication";
 	e.target.textContent = newval.toString();
 	saveItem(key, newval, val, id);
 };
@@ -83,52 +93,102 @@ function validURL(string) {
 function generateTableHead(table, data) {
 	let thead = table.createTHead();
 	let row = thead.insertRow();
-	for (let key of data) {
-		if (fields.indexOf(key) !== -1) {
-			let th = document.createElement("th");
-			let text = document.createTextNode(key);
-			th.appendChild(text);
-			row.appendChild(th);
-		}
+	//destructure header fields from database schema
+	let selectedFields = (({ feed, visible, filterList, mode, id, action }) => ({
+		feed,
+		visible,
+		filterList,
+		mode,
+		id,
+		action,
+	}))(data);
+	//for (let key of data) {
+	for (let key in selectedFields) {
+		//if (fields.indexOf(key) !== -1) {
+		let th = document.createElement("th");
+		let text = document.createTextNode(key);
+		th.appendChild(text);
+		row.appendChild(th);
+		//}
 	}
 	//create dummy header cell
-	let th = document.createElement("th");
-	let text = document.createTextNode("Action");
-	th.appendChild(text);
-	row.appendChild(th);
+	//let th = document.createElement("th");
+	//let text = document.createTextNode("Action");
+	//th.appendChild(text);
+	//row.appendChild(th);
 }
 
-function generateTable(table, data) {
-	for (let element of data) {
+function generateTable(table, arr) {
+	for (let element of arr) {
 		let row = table.insertRow();
-
-		for (let key in element) {
-			if (fields.indexOf(key) !== -1) {
-				let cell = row.insertCell();
-				let text = document.createTextNode(element[key]);
-
-				cell.appendChild(text);
-				cell.setAttribute("data-key", key);
-				cell.setAttribute("data-id", element["id"]);
-				if (key === "feed" && parseInt(element["id"]) === 0) {
-					cell.setAttribute("style", "opacity:0.5; background-color:#00dd33");
-					cell.setAttribute("onfocus", "this.textContent=''");
-				}
-				if (
-					(key === "feed" && parseInt(element["id"]) === 0) ||
-					key === "filterList"
-				) {
-					cell.setAttribute("contenteditable", true);
-					cell.addEventListener("focus", cacheData, false);
-					cell.addEventListener("blur", saveTable, false);
-					cell.addEventListener("keydown", editTable, false);
-				}
-				if (key === "visible") {
-					cell.addEventListener("click", flipVal, false);
-				}
+		let selectedKeys = (({ feed, visible, filterList, mode, id, action }) => ({
+			feed,
+			visible,
+			filterList,
+			mode,
+			id,
+			action,
+		}))(element);
+		for (let key in selectedKeys) {
+			//if (fields.indexOf(key) !== -1) {
+			let cell = row.insertCell();
+			let text = document.createTextNode(selectedKeys[key]);
+			console.log(
+				`creating ${text.textContent} for element ${selectedKeys[key]} with key ${key}`
+			);
+			cell.appendChild(text);
+			cell.setAttribute("data-key", key);
+			cell.setAttribute("data-id", selectedKeys["id"]);
+			if (key === "feed" && parseInt(selectedKeys["id"]) === 0) {
+				cell.setAttribute("style", "opacity:0.5; background-color:#00dd33");
+				cell.setAttribute("onfocus", "this.textContent=''");
 			}
+			if (
+				(key === "feed" && parseInt(selectedKeys["id"]) === 0) ||
+				key === "filterList"
+			) {
+				cell.setAttribute("contenteditable", true);
+				cell.addEventListener("focus", cacheData, false);
+				cell.addEventListener("blur", saveTable, false);
+				cell.addEventListener("keydown", editTable, false);
+			}
+			if (key === "visible") {
+				cell.addEventListener("click", flipBool, false);
+			}
+			if (key === "mode") {
+				cell.addEventListener("click", flipString, false);
+			}
+			if (key === "action") {
+				//remove textNode to accommodate button
+				cell.removeChild(text);
+				let id = selectedKeys["id"];
+				let color = [];
+				color.push(
+					"w-40 h-10 px-5 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-full focus:shadow-outline hover:bg-indigo-800"
+				);
+				color.push(
+					"w-40 h-10 px-5 text-indigo-100 transition-colors duration-150 bg-red-500 rounded-full focus:shadow-outline hover:bg-red-600"
+				);
+				cell.setAttribute("style", "text-align:center");
+				let newElem = document.createElement("input");
+
+				newElem.setAttribute("type", "button");
+				let zeroOrOne = parseInt(id) === 0 ? 0 : 1;
+				newElem.setAttribute("class", color[zeroOrOne]);
+
+				newElem.setAttribute("data-reference", id);
+				if (parseInt(id) > 0) {
+					newElem.setAttribute("value", "Delete Entry");
+					newElem.addEventListener("click", deleteRow, false);
+				} else {
+					newElem.setAttribute("value", "Add Entry");
+					newElem.addEventListener("click", addRow, false);
+				}
+				cell.appendChild(newElem);
+			}
+			//}
 		}
-		//add button at end
+		/*add button at end
 		let cell = row.insertCell();
 		//connect button to cell id
 		let id = cell.parentNode.lastChild.previousSibling.innerHTML;
@@ -154,6 +214,7 @@ function generateTable(table, data) {
 			newElem.setAttribute("value", "Add Entry");
 			newElem.addEventListener("click", addRow, false);
 		}
+		*/
 	}
 }
 
@@ -174,13 +235,6 @@ function saveItem(key, val, oldval, id) {
 	}
 }
 
-function deleteItem(id) {
-	try {
-	} catch (error) {
-		console.error("Generic error: " + error);
-	}
-}
-
 const getOrigin = (url) => {
 	// use URL constructor and return hostname
 	if (url != undefined) {
@@ -198,7 +252,7 @@ let addRow = (e) => {
 	//let id = e.target.getAttribute("data-reference");
 
 	let row = e.target.parentNode.parentNode.children;
-	let feed, filter, visible;
+	let feed, filter, visible, mode;
 	for (let i = 0; i < row.length - 1; i++) {
 		if (row[i]["attributes"]["data-key"].value === "feed") {
 			feed = row[i]["textContent"];
@@ -207,7 +261,13 @@ let addRow = (e) => {
 			filter = row[i]["textContent"];
 		}
 		if (row[i]["attributes"]["data-key"].value === "visible") {
+			// eslint-disable-next-line no-unused-vars
 			visible = row[i]["textContent"] == "true";
+		}
+		if (row[i]["attributes"]["data-key"].value === "mode") {
+			// eslint-disable-next-line no-unused-vars
+			mode =
+				row[i]["textContent"] == "publication" ? "publication" : "aggregator";
 		}
 	}
 
@@ -226,11 +286,12 @@ let addRow = (e) => {
 		visible: true,
 		filterList: filter,
 		id: newid,
-		mode: "",
+		mode: mode,
 		pageHash: "",
 		linkHash: "",
 		timeLastChecked: Date.now(),
 		domain: getOrigin(feed),
+		action: true,
 	};
 
 	if (validURL(feed)) {

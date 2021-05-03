@@ -35,6 +35,9 @@ const schema = {
 					id: {
 						type: "number",
 					},
+					action: {
+						type: "boolean",
+					},
 				},
 			},
 		},
