@@ -9,7 +9,6 @@ window.api.receive("sendFeeds", (arr) => {
 });
 
 //0,feed,1,visible,2,domain,3,filterList,4,mode,5,pageHash,6,linkHash,7,timeLastChecked, 8, id, action
-//let fields = ["feed", "visible", "filterList", "mode", "id", "action"];
 let editCache = "";
 
 let cacheData = (e) => {
@@ -102,20 +101,13 @@ function generateTableHead(table, data) {
 		id,
 		action,
 	}))(data);
-	//for (let key of data) {
+
 	for (let key in selectedFields) {
-		//if (fields.indexOf(key) !== -1) {
 		let th = document.createElement("th");
 		let text = document.createTextNode(key);
 		th.appendChild(text);
 		row.appendChild(th);
-		//}
 	}
-	//create dummy header cell
-	//let th = document.createElement("th");
-	//let text = document.createTextNode("Action");
-	//th.appendChild(text);
-	//row.appendChild(th);
 }
 
 function generateTable(table, arr) {
@@ -130,7 +122,6 @@ function generateTable(table, arr) {
 			action,
 		}))(element);
 		for (let key in selectedKeys) {
-			//if (fields.indexOf(key) !== -1) {
 			let cell = row.insertCell();
 			let text = document.createTextNode(selectedKeys[key]);
 			console.log(
@@ -188,33 +179,6 @@ function generateTable(table, arr) {
 			}
 			//}
 		}
-		/*add button at end
-		let cell = row.insertCell();
-		//connect button to cell id
-		let id = cell.parentNode.lastChild.previousSibling.innerHTML;
-		let color = [];
-		color.push(
-			"w-40 h-10 px-5 text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-full focus:shadow-outline hover:bg-indigo-800"
-		);
-		color.push(
-			"w-40 h-10 px-5 text-indigo-100 transition-colors duration-150 bg-red-500 rounded-full focus:shadow-outline hover:bg-red-600"
-		);
-		cell.setAttribute("style", "text-align:center");
-		let newElem = document.createElement("input");
-		cell.appendChild(newElem);
-		newElem.setAttribute("type", "button");
-		let zeroOrOne = parseInt(id) === 0 ? 0 : 1;
-		newElem.setAttribute("class", color[zeroOrOne]);
-
-		newElem.setAttribute("data-reference", id);
-		if (parseInt(id) > 0) {
-			newElem.setAttribute("value", "Delete Entry");
-			newElem.addEventListener("click", deleteRow, false);
-		} else {
-			newElem.setAttribute("value", "Add Entry");
-			newElem.addEventListener("click", addRow, false);
-		}
-		*/
 	}
 }
 

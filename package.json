@@ -1,7 +1,7 @@
 {
 	"name": "rssputin",
 	"productName": "rssputin",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "An RSS headline aggregator",
 	"license": "MIT",
 	"repository": {

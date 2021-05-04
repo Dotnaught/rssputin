@@ -1,7 +1,5 @@
 "use strict";
 
-//const { BrowserWindow } = require("electron");
-
 const Parser = require("rss-parser");
 let parser = new Parser({
 	customFields: {
@@ -12,7 +10,6 @@ let parser = new Parser({
 });
 
 const { formatDistance, differenceInHours } = require("date-fns");
-//const { fi } = require("date-fns/locale");
 
 const getAllFeeds = async (urlList, win) => {
 	const promises = urlList.map(async (entry) => {
@@ -111,7 +108,6 @@ function processFeeds(feeds, timeWindow) {
 			let altURLs = undefined;
 			let altLink = undefined;
 			let aggregatorLink = undefined;
-			//catch NLRB
 			if (i.content && feed.meta.mode === "aggregator") {
 				let linkIndex;
 				let aggIndex;
@@ -133,10 +129,6 @@ function processFeeds(feeds, timeWindow) {
 						linkIndex = 3;
 						aggIndex = 0;
 						break;
-					//case "LWN.net":
-					//	linkIndex = 2;
-					//	aggIndex = 0;
-					//	break;
 					case "Techmeme":
 						linkIndex = 0;
 						aggIndex = 2;
@@ -149,23 +141,8 @@ function processFeeds(feeds, timeWindow) {
 						linkIndex = 0;
 						aggIndex = 1;
 				}
-				//special case for aggregator with link in RSS.link object
-
-				/*feed.res.title !== "Hacker News" &&
-					feed.res.title !== "Lobsters" &&
-					feed.res.title !== "IBM PSIRT Blog" &&
-					feed.res.title !== "The Keyword" &&
-					feed.res.title !== "Newsroom – About Facebook" */
 				altLink = feed.meta.mode === "aggregator" ? altURLs[linkIndex] : i.link;
 				aggregatorLink = altURLs[aggIndex];
-				/*
-				if (
-					feed.res.title === "The Keyword" ||
-					feed.res.title === "IBM PSIRT Blog"
-				) {
-					aggregatorLink = undefined;
-				}
-				*/
 			}
 			//create the feed object to be displayed
 			let obj = {};
@@ -215,7 +192,7 @@ function processFeeds(feeds, timeWindow) {
 				obj.title += "...";
 			}
 
-			obj.link = altLink && feed.meta.mode === "aggregator" ? altLink : i.link; //altLink && altLink.startsWith("http") ? altLink : i.link;
+			obj.link = altLink && feed.meta.mode === "aggregator" ? altLink : i.link;
 			let sourceURL = feed.res.link;
 			obj.sourceDisplayText = getHostname(sourceURL);
 			obj.sourceLink = getOrigin(sourceURL);
