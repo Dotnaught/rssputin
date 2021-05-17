@@ -14,6 +14,9 @@ const schema = {
 					visible: {
 						type: "boolean",
 					},
+					color: {
+						type: "string",
+					},
 					domain: {
 						type: "string",
 					},

@@ -199,6 +199,7 @@ function processFeeds(feeds, timeWindow) {
 			obj.aggregatorLink = aggregatorLink;
 			obj.feedTitle = feed.res.title;
 
+			obj.color = feed.meta.color;
 			let result = differenceInHours(Date.now(), obj.published);
 
 			let filteredWords = stringToArray(filterList);

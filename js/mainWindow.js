@@ -10,6 +10,11 @@ window.api.receive("updateBar", (args) => {
 	let bar = document.getElementById("bar");
 	let progress = (args[0] / args[1]) * 100;
 	bar.style.width = progress + "%";
+	let titleText = document.getElementById("titleText");
+	titleText.innerHTML = args[0] + "/" + args[1];
+	if (progress === 100) {
+		titleText.innerHTML = "RSSPutin";
+	}
 });
 
 let timeWindow;
@@ -184,7 +189,7 @@ function generateTable(table, data) {
 				if (element.title.length > 159) {
 					a.setAttribute("title", element.title);
 				}
-				//a.style.color = "#00AA00";
+				a.style.color = element.color;
 				a.appendChild(text);
 				cell.appendChild(a);
 			} else if (key === "sourceLink") {
@@ -199,7 +204,7 @@ function generateTable(table, data) {
 					: element.sourceLink;
 				a.setAttribute("href", link);
 				//a.setAttribute("class", element.sourceLink);
-
+				a.style.color = element.color;
 				a.appendChild(text);
 				cell.appendChild(a);
 			} else {

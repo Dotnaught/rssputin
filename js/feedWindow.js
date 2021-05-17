@@ -8,7 +8,21 @@ window.api.receive("sendFeeds", (arr) => {
 	generateTable(table, arr);
 });
 
-//0,feed,1,visible,2,domain,3,filterList,4,mode,5,pageHash,6,linkHash,7,timeLastChecked, 8, id, action
+/*
+{
+			"feed": "Enter valid feed",
+			"visible": true,
+			"color": "#0000aa",
+			"domain": "",
+			"filterList": "",
+			"mode": "publication",
+			"pageHash": "",
+			"linkHash": "",
+			"timeLastChecked": 1610835268939,
+			"id": 0,
+			"action": false
+		},
+*/
 let editCache = "";
 
 let cacheData = (e) => {
@@ -77,6 +91,16 @@ let flipString = (e) => {
 	saveItem(key, newval, val, id);
 };
 
+let setColor = (e) => {
+	let id = e.target.getAttribute("data-id");
+	let key = e.target.getAttribute("data-key");
+	let value = e.target.getAttribute("value");
+	let newVal = e.target.newColor;
+	if (value != newVal) {
+		saveItem(key, newVal, value, id);
+	}
+};
+
 function validURL(string) {
 	let url;
 
@@ -93,9 +117,18 @@ function generateTableHead(table, data) {
 	let thead = table.createTHead();
 	let row = thead.insertRow();
 	//destructure header fields from database schema
-	let selectedFields = (({ feed, visible, filterList, mode, id, action }) => ({
+	let selectedFields = (({
 		feed,
 		visible,
+		color,
+		filterList,
+		mode,
+		id,
+		action,
+	}) => ({
+		feed,
+		visible,
+		color,
 		filterList,
 		mode,
 		id,
@@ -113,9 +146,18 @@ function generateTableHead(table, data) {
 function generateTable(table, arr) {
 	for (let element of arr) {
 		let row = table.insertRow();
-		let selectedKeys = (({ feed, visible, filterList, mode, id, action }) => ({
+		let selectedKeys = (({
 			feed,
 			visible,
+			color,
+			filterList,
+			mode,
+			id,
+			action,
+		}) => ({
+			feed,
+			visible,
+			color,
 			filterList,
 			mode,
 			id,
@@ -145,6 +187,29 @@ function generateTable(table, arr) {
 			}
 			if (key === "visible") {
 				cell.addEventListener("click", flipBool, false);
+			}
+			if (key === "color") {
+				let id = selectedKeys["id"];
+				let storedColor = selectedKeys["color"];
+				console.log("storedColor", storedColor);
+				//remove textNode to accommodate color picker
+				cell.removeChild(text);
+				cell.setAttribute("style", "text-align:center");
+				let newElem = document.createElement("input");
+				newElem.setAttribute("type", "color");
+				newElem.setAttribute("data-key", key);
+				newElem.setAttribute("data-id", id);
+				newElem.setAttribute("value", storedColor);
+
+				newElem.addEventListener("change", setColor, false);
+				newElem.addEventListener(
+					"input",
+					function () {
+						newElem.newColor = newElem.value;
+					},
+					false
+				);
+				cell.appendChild(newElem);
 			}
 			if (key === "mode") {
 				cell.addEventListener("click", flipString, false);
@@ -216,18 +281,23 @@ let addRow = (e) => {
 	//let id = e.target.getAttribute("data-reference");
 
 	let row = e.target.parentNode.parentNode.children;
-	let feed, filter, visible, mode;
+	let feed, visible, color, filter, mode;
 	for (let i = 0; i < row.length - 1; i++) {
 		if (row[i]["attributes"]["data-key"].value === "feed") {
 			feed = row[i]["textContent"];
-		}
-		if (row[i]["attributes"]["data-key"].value === "filterList") {
-			filter = row[i]["textContent"];
 		}
 		if (row[i]["attributes"]["data-key"].value === "visible") {
 			// eslint-disable-next-line no-unused-vars
 			visible = row[i]["textContent"] == "true";
 		}
+		if (row[i]["attributes"]["data-key"].value === "color") {
+			// eslint-disable-next-line no-unused-vars
+			color = row[i]["textContent"];
+		}
+		if (row[i]["attributes"]["data-key"].value === "filterList") {
+			filter = row[i]["textContent"];
+		}
+
 		if (row[i]["attributes"]["data-key"].value === "mode") {
 			// eslint-disable-next-line no-unused-vars
 			mode =
@@ -248,6 +318,7 @@ let addRow = (e) => {
 	let creationObj = {
 		feed: feed,
 		visible: true,
+		color: color,
 		filterList: filter,
 		id: newid,
 		mode: mode,
