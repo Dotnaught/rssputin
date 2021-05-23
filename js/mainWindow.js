@@ -1,9 +1,5 @@
 "use strict";
 
-//const notification = document.getElementById("notification");
-//const message = document.getElementById("message");
-//const restartButton = document.getElementById("restart-button");
-
 let table = document.querySelector("table");
 
 window.api.receive("updateBar", (args) => {
@@ -17,18 +13,18 @@ window.api.receive("updateBar", (args) => {
 	}
 });
 
-let timeWindow;
+let defaultsObj;
 
-window.api.receive("receiveTimeWindow", (receivedTime) => {
-	timeWindow = receivedTime;
+window.api.receive("receiveDefaults", (defaults) => {
+	defaultsObj = defaults;
 });
 
 window.api.receive("fromMain", (arr) => {
 	if (!arr) arr = 0;
 	if (arr.length > 0) {
-		//let data = Object.keys(arr[0]);
 		generateTableHead(table);
 		generateTable(table, arr);
+		resizableGrid(table);
 	} else {
 		generateNoDataMessage();
 		generateTableHead(table);
@@ -44,44 +40,12 @@ window.addEventListener("DOMContentLoaded", () => {
 	let query = document.getElementById("query");
 	query.addEventListener("focus", displayCancelShow);
 	query.addEventListener("keyup", searchFunction);
-	//query.addEventListener("blur", displayCancelHide);
-	//query.addEventListener("click", displayCancelHide);
 
 	let clear = document.querySelector("#clear");
 	clear.addEventListener("click", displayCancelHide);
 	clear.style.visibility = "hidden";
-	/*
-	let close = document.querySelector("#close-button");
-	close.addEventListener("click", closeNotification);
-	let restart = document.querySelector("#restart-button");
-	restart.addEventListener("click", restartApp);
-	*/
-});
-/*
-function closeNotification() {
-	notification.classList.add("hidden");
-}
-
-function restartApp() {
-	window.api.send("restartApp", []);
-}
-*/
-
-/*
-window.api.receive("update_available", () => {
-	//window.api.removeAllListeners("update_available");
-	message.innerText = "A new update is available. Downloading now...";
-	notification.classList.remove("hidden");
 });
 
-window.api.receive("update_downloaded", () => {
-	//window.api.removeAllListeners("update_downloaded");
-	message.innerText =
-		"Update Downloaded. It will be installed on restart. Restart now?";
-	restartButton.classList.remove("hidden");
-	notification.classList.remove("hidden");
-});
-*/
 function displayCancelShow() {
 	let cancelButton = document.getElementById("clear");
 	cancelButton.style.visibility = "visible";
@@ -98,7 +62,6 @@ function searchFunction() {
 	let input, filter, tr, td, i;
 	input = document.getElementById("query");
 	filter = input.value.toUpperCase();
-	//table = document.getElementById("myTable");
 	tr = table.getElementsByTagName("tr");
 	for (i = 1; i < tr.length; i++) {
 		td = tr[i].getElementsByTagName("td")[1];
@@ -125,11 +88,22 @@ function clearNoDataMessage() {
 	}
 }
 
+function storeWidthData(widthData) {
+	window.api.send("storeWidthData", widthData);
+}
+
 //published, author, hoursAgo, title, link, sourceLink, feedTitle
 function generateTableHead(table) {
 	let thead = table.createTHead();
 	let row = thead.insertRow();
 	let columns = ["hoursAgo", "Title", "Author", "Source"];
+	//widths for columns
+	let w = {
+		hoursAgo: defaultsObj.hoursAgo,
+		Title: defaultsObj.Title,
+		Author: defaultsObj.Author,
+		Source: defaultsObj.Source,
+	};
 	let times = [3, 6, 12, 24, 48, 72];
 	//for (let key of data) {
 	for (let key of columns) {
@@ -142,7 +116,7 @@ function generateTableHead(table) {
 				opt.id = "timeSelect";
 				opt.text = `Last ${val} hours`;
 				opt.value = val;
-				if (val === timeWindow) {
+				if (val === defaultsObj.timeWindow) {
 					opt.selected = true;
 				}
 				dropdown.appendChild(opt);
@@ -153,12 +127,14 @@ function generateTableHead(table) {
 			});
 			//let text = document.createTextNode(key);
 			th.setAttribute("id", "hoursAgo");
-
+			th.style.width = w[key];
 			th.appendChild(dropdown);
 
 			row.appendChild(th);
 		} else {
 			let th = document.createElement("th");
+			th.setAttribute("id", key);
+			th.style.width = w[key];
 			let text = document.createTextNode(key);
 			th.appendChild(text);
 			row.appendChild(th);
@@ -171,12 +147,8 @@ function generateTable(table, data) {
 	let columns = ["hoursAgo", "title", "author", "sourceLink"];
 
 	for (let element of data) {
-		//let timeCheck = /hours|hour|minutes|minute/.test(element["hoursAgo"]);
-		//filter everything by regex
-		//if (timeCheck) {
-		//if (!element["hoursAgo"].includes("days")) {
 		let row = table.insertRow();
-		//for (let key in element) {
+
 		for (let key of columns) {
 			let cell = row.insertCell();
 			if (key === "title") {
@@ -185,7 +157,7 @@ function generateTable(table, data) {
 				const a = document.createElement("a");
 
 				a.setAttribute("href", element.link); //'#'
-				//a.setAttribute("class", element.sourceLink); //TODO
+
 				if (element.title.length > 159) {
 					a.setAttribute("title", element.title);
 				}
@@ -203,7 +175,7 @@ function generateTable(table, data) {
 					? element.aggregatorLink
 					: element.sourceLink;
 				a.setAttribute("href", link);
-				//a.setAttribute("class", element.sourceLink);
+
 				a.style.color = element.color;
 				a.appendChild(text);
 				cell.appendChild(a);
@@ -213,6 +185,108 @@ function generateTable(table, data) {
 				cell.appendChild(text);
 			}
 		}
-		//}
+	}
+}
+
+//resizable table code
+function resizableGrid(table) {
+	var row = table.getElementsByTagName("tr")[0],
+		cols = row ? row.children : undefined;
+	if (!cols) return;
+
+	table.style.overflow = "hidden";
+
+	var tableHeight = table.offsetHeight;
+
+	for (var i = 0; i < cols.length; i++) {
+		var div = createDiv(tableHeight);
+		cols[i].appendChild(div);
+		cols[i].style.position = "relative";
+		setListeners(div, i);
+	}
+
+	function setListeners(div) {
+		var pageX, curCol, nxtCol, curColWidth, nxtColWidth;
+
+		div.addEventListener("mousedown", function (e) {
+			curCol = e.target.parentElement;
+			nxtCol = curCol.nextElementSibling;
+			pageX = e.pageX;
+
+			var padding = paddingDiff(curCol);
+
+			curColWidth = curCol.offsetWidth - padding;
+			if (nxtCol) nxtColWidth = nxtCol.offsetWidth - padding;
+		});
+
+		div.addEventListener("mouseover", function (e) {
+			e.target.style.borderRight = "2px solid #0000ff";
+		});
+
+		div.addEventListener("mouseout", function (e) {
+			e.target.style.borderRight = "";
+		});
+
+		document.addEventListener("mousemove", function (e) {
+			if (curCol) {
+				var diffX = e.pageX - pageX;
+
+				if (nxtCol) nxtCol.style.width = nxtColWidth - diffX + "px";
+
+				curCol.style.width = curColWidth + diffX + "px";
+			}
+		});
+
+		document.addEventListener("mouseup", function (e) {
+			curCol = e.target.parentElement;
+			nxtCol = curCol.nextElementSibling;
+			// console.log("parent");
+			// console.log(e.target.parentElement);
+			// console.log("nextElementSibling");
+			// console.log(e.target.parentElement.nextElementSibling);
+			// console.log(curCol.style.width, nxtCol.style.width);
+			// console.log(curCol.id, nxtCol.id);
+
+			let obj = {
+				id: curCol.id,
+				w: curCol.style.width,
+				nxid: nxtCol.id,
+				nxw: nxtCol.style.width,
+			};
+			if (curCol.id && nxtCol.id) {
+				storeWidthData(obj);
+			}
+			curCol = undefined;
+			nxtCol = undefined;
+			pageX = undefined;
+			nxtColWidth = undefined;
+			curColWidth = undefined;
+		});
+	}
+
+	function createDiv(height) {
+		var div = document.createElement("div");
+		div.style.top = 0;
+		div.style.right = 0;
+		div.style.width = "5px";
+		div.style.position = "absolute";
+		div.style.cursor = "col-resize";
+		div.style.userSelect = "none";
+		div.style.height = height + "px";
+		return div;
+	}
+
+	function paddingDiff(col) {
+		if (getStyleVal(col, "box-sizing") == "border-box") {
+			return 0;
+		}
+
+		var padLeft = getStyleVal(col, "padding-left");
+		var padRight = getStyleVal(col, "padding-right");
+		return parseInt(padLeft) + parseInt(padRight);
+	}
+
+	function getStyleVal(elm, css) {
+		return window.getComputedStyle(elm, null).getPropertyValue(css);
 	}
 }

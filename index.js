@@ -28,8 +28,6 @@ const config = require("./js/config");
 const DataStore = require("./js/datastore");
 const Store = require("electron-store");
 const store = new Store();
-const timeWindow = store.get("timeWindow") || 72;
-store.set("timeWindow", timeWindow);
 
 const {
 	is,
@@ -51,8 +49,6 @@ contextMenu();
 
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId("com.lot49.rssputin");
-
-//const { config } = JSON.parse(fs.readFileSync('../config.json', 'utf8'))
 
 const schema = jsonSchema.schema;
 //const testData = jsonSchema.testData;
@@ -221,6 +217,12 @@ ipcMain.on("setTimeWindow", (event, args) => {
 	setMainWindow();
 });
 
+ipcMain.on("storeWidthData", (event, args) => {
+	console.log(args);
+	store.set(args.id, args.w);
+	store.set(args.nxid, args.nxw);
+});
+
 ipcMain.on("setFeedItem", (event, args) => {
 	feedData.setFeedItem(args);
 });
@@ -265,6 +267,32 @@ autoUpdater.on("error", (message) => {
 const showPreferences = () => {
 	// Show the app's preferences here
 };
+
+function setDefaults() {
+	let timeWindow = store.get("timeWindow") || 72;
+	store.set("timeWindow", timeWindow);
+	let hoursAgo = store.get("hoursAgo") || "10%";
+	store.set("hoursAgo", hoursAgo);
+	let Title = store.get("Title") || "66%";
+	store.set("Title", Title);
+	let Author = store.get("Author") || "10%";
+	store.set("Author", Author);
+	let Source = store.get("Source") || "15%";
+	store.set("Source", Source);
+}
+
+function resetColumnWidths() {
+	let timeWindow = 72;
+	store.set("timeWindow", timeWindow);
+	let hoursAgo = "10%";
+	store.set("hoursAgo", hoursAgo);
+	let Title = "66%";
+	store.set("Title", Title);
+	let Author = "10%";
+	store.set("Author", Author);
+	let Source = "15%";
+	store.set("Source", Source);
+}
 
 function showNotification(title, body) {
 	const notification = {
@@ -430,7 +458,7 @@ const debugSubmenu = [
 	{
 		label: "Delete App Data",
 		click() {
-			shell.moveItemToTrash(app.getPath("userData"));
+			shell.trashItem(app.getPath("userData"));
 			app.relaunch();
 			app.quit();
 		},
@@ -496,6 +524,14 @@ const macosTemplate = [
 				},
 			},
 			{
+				label: "Reset Column Widths",
+				async click() {
+					if (mainWindow) {
+						resetColumnWidths();
+					}
+				},
+			},
+			{
 				type: "separator",
 			},
 			{
@@ -509,6 +545,7 @@ const macosTemplate = [
 	{
 		role: "viewMenu",
 	},
+
 	{
 		role: "windowMenu",
 	},
@@ -524,23 +561,55 @@ const otherTemplate = [
 		role: "fileMenu",
 		submenu: [
 			{
-				label: "Custom",
-			},
-			{
-				type: "separator",
-			},
-			{
-				label: "Settings",
-				accelerator: "Control+,",
-				click() {
-					showPreferences();
+				label: "Show Feeds",
+				accelerator: "CmdOrCtrl+F",
+				async click() {
+					if (mainWindow) {
+						createFeedWindow();
+					}
 				},
 			},
 			{
 				type: "separator",
 			},
 			{
-				role: "quit",
+				label: "Import Database",
+				accelerator: "CmdOrCtrl+=",
+				async click() {
+					if (mainWindow) {
+						importDB();
+					}
+				},
+			},
+			{
+				label: "Export Database",
+				accelerator: "CmdOrCtrl+B",
+				async click() {
+					if (mainWindow) {
+						exportDB();
+					}
+				},
+			},
+			{
+				type: "separator",
+			},
+			{
+				type: "separator",
+			},
+			{
+				label: "Open Main Window",
+				accelerator: "CmdOrCtrl+D",
+				enabled: false,
+				id: "mainWindow",
+				async click() {
+					setMainWindow();
+				},
+			},
+			{
+				type: "separator",
+			},
+			{
+				role: "close",
 			},
 		],
 	},
@@ -581,12 +650,22 @@ const setMainWindow = async () => {
 		Menu.setApplicationMenu(menu);
 		const menuItem = menu.getMenuItemById("mainWindow");
 		menuItem.enabled = false;
+		//setDefaults
+		setDefaults();
+		let timeWindow = store.get("timeWindow");
 		// Create the mainWindow
 		mainWindow = await createMainWindow();
 		// Intercept navigation event so the URL opens in the browser
 		mainWindow.webContents.on("will-navigate", handleRedirect);
-		const timeWindow = store.get("timeWindow");
-		mainWindow.webContents.send("receiveTimeWindow", timeWindow);
+		let defaultsObj = {
+			timeWindow: timeWindow,
+			hoursAgo: store.get("hours"),
+			Title: store.get("Title"),
+			Author: store.get("Author"),
+			Source: store.get("Source"),
+		};
+
+		mainWindow.webContents.send("receiveDefaults", defaultsObj);
 		// Fetch and process RSS feeds
 		rsslib
 			.getAllFeeds(feedData.getFeeds(), mainWindow)

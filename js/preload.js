@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld("api", {
 			"deleteFeed",
 			"openFeedWindow",
 			"restartApp",
+			"storeWidthData",
 		];
 		if (validChannels.includes(channel)) {
 			ipcRenderer.send(channel, data);
@@ -25,7 +26,7 @@ contextBridge.exposeInMainWorld("api", {
 			"fromMain",
 			"updateBar",
 			"sendFeeds",
-			"receiveTimeWindow",
+			"receiveDefaults",
 		];
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
