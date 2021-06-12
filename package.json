@@ -27,19 +27,19 @@
 		"publish": "electron-builder --macos --linux --windows --publish always"
 	},
 	"dependencies": {
-		"ajv": "^6.12.6",
+		"ajv": "^8.6.0",
 		"date-fns": "^2.16.1",
-		"electron-context-menu": "^2.3.1",
+		"electron-context-menu": "^3.1.0",
 		"electron-debug": "^3.0.0",
 		"electron-notarize": "^1.0.0",
-		"electron-store": "^7.0.2",
+		"electron-store": "^8.0.0",
 		"electron-unhandled": "^3.0.0",
 		"electron-updater": "^4.0.6",
-		"electron-util": "^0.14.2",
+		"electron-util": "^0.16.0",
 		"rss-parser": "^3.10.0"
 	},
 	"devDependencies": {
-		"electron": "^12.0.1",
+		"electron": "^13.1.2",
 		"electron-builder": "^22.9.1",
 		"eslint": "^7.20.0"
 	},
