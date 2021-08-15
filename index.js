@@ -7,6 +7,7 @@ const {
 	BrowserWindow,
 	Menu,
 	dialog,
+	net,
 	ipcMain,
 	screen,
 	shell,
@@ -42,6 +43,27 @@ const userData = app.getPath("userData") + "/rssputinDB.json";
 //const rssdb = require(userData);
 const rsslib = require("./js/rsslib");
 const jsonSchema = require("./js/schema");
+
+const gh = require("./js/github");
+//
+app.whenReady().then(() => {
+	const { net } = require("electron");
+	const request = net.request(
+		"https://github.com/minimaxir/aitextgen/issues?q=is%3Aissue+is%3Aopen+sort%3Acomments-desc"
+	);
+	request.on("response", (response) => {
+		console.log(`STATUS: ${response.statusCode}`);
+		console.log(`HEADERS: ${JSON.stringify(response.headers)}`);
+		response.on("data", (chunk) => {
+			console.log(`BODY: ${chunk}`);
+		});
+		response.on("end", () => {
+			console.log("No more data in response.");
+		});
+	});
+	request.end();
+});
+//
 
 unhandled();
 debug();
@@ -175,6 +197,10 @@ const createFeedWindow = async () => {
 	await feedWindow.loadFile(path.join(__dirname, "./html/feedWindow.html"));
 
 	return feedWindow;
+};
+
+const createGHWindow = async () => {
+	console.log("ghWindow");
 };
 
 app.on("second-instance", () => {
@@ -491,6 +517,18 @@ const macosTemplate = [
 				type: "separator",
 			},
 			{
+				label: "Show Issues",
+				accelerator: "CmdOrCtrl+I",
+				async click() {
+					if (mainWindow) {
+						createGHWindow();
+					}
+				},
+			},
+			{
+				type: "separator",
+			},
+			{
 				label: "Import Database",
 				accelerator: "CmdOrCtrl+=",
 				async click() {
@@ -603,6 +641,14 @@ const otherTemplate = [
 				id: "mainWindow",
 				async click() {
 					setMainWindow();
+				},
+			},
+			{
+				label: "Reset Column Widths",
+				async click() {
+					if (mainWindow) {
+						resetColumnWidths();
+					}
 				},
 			},
 			{
