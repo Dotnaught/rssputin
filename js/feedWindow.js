@@ -86,8 +86,20 @@ let flipString = (e) => {
 	let key = e.target.getAttribute("data-key");
 	let val, newval;
 	val = e.target.textContent;
-	newval = val === "publication" ? "aggregator" : "publication";
+	switch (val) {
+		case "publication":
+			newval = "aggregator";
+			break;
+		case "aggregator":
+			newval = "docket";
+			break;
+		case "docket":
+			newval = "publication";
+			break;
+	}
+	//newval = val === "publication" ? "aggregator" : "publication";
 	e.target.textContent = newval.toString();
+	console.log(newval, val);
 	saveItem(key, newval, val, id);
 };
 
@@ -300,8 +312,19 @@ let addRow = (e) => {
 
 		if (row[i]["attributes"]["data-key"].value === "mode") {
 			// eslint-disable-next-line no-unused-vars
-			mode =
-				row[i]["textContent"] == "publication" ? "publication" : "aggregator";
+			switch (row[i]["textContent"]) {
+				case "publication":
+					mode = "publication";
+					break;
+				case "aggregator":
+					mode = "aggregator";
+					break;
+				case "docket":
+					mode = "docket";
+					break;
+			}
+
+			//mode = row[i]["textContent"] == "publication" ? "publication" : "aggregator";
 		}
 	}
 

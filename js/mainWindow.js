@@ -1,6 +1,7 @@
 "use strict";
 
 let table = document.querySelector("table");
+let checkbox = document.getElementById("checkbox");
 
 window.api.receive("updateBar", (args) => {
 	let bar = document.getElementById("bar");
@@ -17,6 +18,20 @@ let defaultsObj;
 
 window.api.receive("receiveDefaults", (defaults) => {
 	defaultsObj = defaults;
+	if (defaultsObj.docketOnly) {
+		checkbox.setAttribute("checked", "checked");
+	} else {
+		checkbox.removeAttribute("checked");
+	}
+});
+
+window.api.receive("updateLinks", (links) => {
+	let lnk = document.getElementById(links);
+	try {
+		lnk.setAttribute("style", "color: red");
+	} catch (e) {
+		console.log(e);
+	}
 });
 
 window.api.receive("fromMain", (arr) => {
@@ -41,19 +56,44 @@ window.addEventListener("DOMContentLoaded", () => {
 	query.addEventListener("focus", displayCancelShow);
 	query.addEventListener("keyup", searchFunction);
 
-	let clear = document.querySelector("#clear");
+	//let clear = document.querySelector("#clear");
+	let clear = document.getElementById("clear");
 	clear.addEventListener("click", displayCancelHide);
-	clear.style.visibility = "hidden";
+	//clear.style.visibility = "hidden";
+	//clear.setAttribute("style", "opacity: 0.5");
+	//clear.style.opacity = 0.5;
+
+	checkbox.addEventListener("change", filterDocket);
 });
 
+function filterDocket(event) {
+	defaultsObj.docketOnly = event.target.checked;
+	console.log(defaultsObj.docketOnly);
+
+	if (event.target.checked) {
+		checkbox.removeAttribute("checked");
+		window.api.send("setDocket", checkbox.checked);
+		console.log(checkbox.checked);
+	} else {
+		checkbox.setAttribute("checked", "checked");
+		window.api.send("setDocket", checkbox.checked);
+		console.log(checkbox.checked);
+	}
+}
+
 function displayCancelShow() {
-	let cancelButton = document.getElementById("clear");
-	cancelButton.style.visibility = "visible";
+	//let clear = document.getElementById("clear");
+	//cancelButton.style.visibility = "visible";
+	//clear.setAttribute("style", "opacity: 0.5");
+	//clear.style.opacity = 1;
 }
 
 function displayCancelHide() {
-	let cancelButton = document.getElementById("clear");
-	cancelButton.style.visibility = "hidden";
+	//let clear = document.getElementById("clear");
+	//cancelButton.style.visibility = "hidden";
+	//clear.setAttribute("style", "opacity: 0.5");
+	//clear.style.opacity = 0.5;
+
 	document.getElementById("query").value = "";
 	searchFunction();
 }
@@ -157,7 +197,7 @@ function generateTable(table, data) {
 				const a = document.createElement("a");
 
 				a.setAttribute("href", element.link); //'#'
-
+				a.setAttribute("id", element.link);
 				if (element.title.length > 159) {
 					a.setAttribute("title", element.title);
 				}
@@ -176,6 +216,7 @@ function generateTable(table, data) {
 					: element.sourceLink;
 				a.setAttribute("href", link);
 
+				a.setAttribute("id", row.rowIndex);
 				a.style.color = element.color;
 				a.appendChild(text);
 				cell.appendChild(a);
@@ -238,7 +279,13 @@ function resizableGrid(table) {
 		});
 
 		document.addEventListener("mouseup", function (e) {
+			let cols = ["hoursAgo", "Title", "Author", "Source"];
+			let tgt = e.target.parentElement?.id || "None";
+			if (!cols.includes(tgt)) {
+				return;
+			}
 			curCol = e.target.parentElement;
+			console.log(e.target.parentElement.id);
 			nxtCol = curCol.nextElementSibling;
 			// console.log("parent");
 			// console.log(e.target.parentElement);

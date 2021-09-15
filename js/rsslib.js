@@ -114,7 +114,7 @@ function removeXMLInvalidChars(str, removeDiscouragedChars) {
 	return str;
 }
 
-function processFeeds(feeds, timeWindow) {
+function processFeeds(feeds, timeWindow, docketOnly) {
 	if (feeds[0] === undefined) feeds.shift();
 
 	let arr = [];
@@ -139,6 +139,10 @@ function processFeeds(feeds, timeWindow) {
 
 	feeds.forEach((feed) => {
 		if (feed === undefined) {
+			return;
+		} else if (docketOnly && feed.meta.mode !== "docket") {
+			return;
+		} else if (!docketOnly && feed.meta.mode === "docket") {
 			return;
 		}
 
@@ -185,6 +189,7 @@ function processFeeds(feeds, timeWindow) {
 				altLink = feed.meta.mode === "aggregator" ? altURLs[linkIndex] : i.link;
 				aggregatorLink = altURLs[aggIndex];
 			}
+
 			//create the feed object to be displayed
 			let obj = {};
 
@@ -210,6 +215,9 @@ function processFeeds(feeds, timeWindow) {
 			} else if (i.creator !== undefined) {
 				//for arXiv
 				obj.author = i.creator;
+			} else if (feed.meta.mode === "docket") {
+				//add type of court filing to unused author column
+				obj.author = i.content.substring(1, i.content.indexOf("]"));
 			} else {
 				obj.author = "";
 			}

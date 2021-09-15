@@ -43,11 +43,11 @@ const userData = app.getPath("userData") + "/rssputinDB.json";
 //const rssdb = require(userData);
 const rsslib = require("./js/rsslib");
 const jsonSchema = require("./js/schema");
-
+/*
 const gh = require("./js/github");
-//
+
 app.whenReady().then(() => {
-	const { net } = require("electron");
+	//const { net } = require("electron");
 	const request = net.request(
 		"https://github.com/minimaxir/aitextgen/issues?q=is%3Aissue+is%3Aopen+sort%3Acomments-desc"
 	);
@@ -63,7 +63,7 @@ app.whenReady().then(() => {
 	});
 	request.end();
 });
-//
+*/
 
 unhandled();
 debug();
@@ -82,6 +82,7 @@ const resp = fs.readFileSync(userData, "utf8", (err, data) => {
 const rssdb = JSON.parse(resp);
 */
 const Ajv = require("ajv");
+const { SocketAddress } = require("net");
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 //const valid = validate(rssdb);
@@ -136,6 +137,7 @@ const createMainWindow = async () => {
 			enableRemoteModule: false, // Turn off remote
 			worldSafeExecuteJavaScript: true, // Sanitize JavaScript
 			preload: path.join(__dirname, "./js/preload.js"), // Use a preload script
+			nativeWindowOpen: true,
 		},
 	});
 
@@ -175,6 +177,7 @@ const createFeedWindow = async () => {
 			enableRemoteModule: false, // Turn off remote
 			worldSafeExecuteJavaScript: true, // Sanitize JavaScript
 			preload: path.join(__dirname, "./js/preload.js"), // Use a preload script
+			nativeWindowOpen: true,
 		},
 	});
 
@@ -197,10 +200,6 @@ const createFeedWindow = async () => {
 	await feedWindow.loadFile(path.join(__dirname, "./html/feedWindow.html"));
 
 	return feedWindow;
-};
-
-const createGHWindow = async () => {
-	console.log("ghWindow");
 };
 
 app.on("second-instance", () => {
@@ -228,6 +227,12 @@ app.on("activate", async () => {
 ipcMain.on("requestFeeds", (event, args) => {
 	const feeds = feedData.getFeeds();
 	feedWindow.webContents.send("sendFeeds", feeds);
+});
+
+ipcMain.on("setDocket", (event, args) => {
+	store.set("docketOnly", args);
+	mainWindow.close();
+	setMainWindow();
 });
 
 ipcMain.on("setTimeWindow", (event, args) => {
@@ -305,6 +310,8 @@ function setDefaults() {
 	store.set("Author", Author);
 	let Source = store.get("Source") || "15%";
 	store.set("Source", Source);
+	let docketOnly = store.get("docketOnly") || false;
+	store.set("docketOnly", docketOnly);
 }
 
 function resetColumnWidths() {
@@ -517,18 +524,6 @@ const macosTemplate = [
 				type: "separator",
 			},
 			{
-				label: "Show Issues",
-				accelerator: "CmdOrCtrl+I",
-				async click() {
-					if (mainWindow) {
-						createGHWindow();
-					}
-				},
-			},
-			{
-				type: "separator",
-			},
-			{
 				label: "Import Database",
 				accelerator: "CmdOrCtrl+=",
 				async click() {
@@ -687,6 +682,8 @@ const setMainWindow = async () => {
 		const handleRedirect = (event, url) => {
 			if (url !== event.sender.getURL()) {
 				shell.openExternal(url);
+				mainWindow.webContents.send("updateLinks", url);
+
 				event.preventDefault();
 			}
 		};
@@ -699,12 +696,14 @@ const setMainWindow = async () => {
 		//setDefaults
 		setDefaults();
 		let timeWindow = store.get("timeWindow");
+		let docketOnly = store.get("docketOnly");
 		// Create the mainWindow
 		mainWindow = await createMainWindow();
 		// Intercept navigation event so the URL opens in the browser
 		mainWindow.webContents.on("will-navigate", handleRedirect);
 		let defaultsObj = {
 			timeWindow: timeWindow,
+			docketOnly: docketOnly,
 			hoursAgo: store.get("hours"),
 			Title: store.get("Title"),
 			Author: store.get("Author"),
@@ -715,7 +714,7 @@ const setMainWindow = async () => {
 		// Fetch and process RSS feeds
 		rsslib
 			.getAllFeeds(feedData.getFeeds(), mainWindow)
-			.then((feeds) => rsslib.processFeeds(feeds, timeWindow))
+			.then((feeds) => rsslib.processFeeds(feeds, timeWindow, docketOnly))
 			.then((result) => mainWindow.webContents.send("fromMain", result))
 			.catch((error) => console.error(error.message));
 	});

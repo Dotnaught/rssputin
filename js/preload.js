@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld("api", {
 		let validChannels = [
 			"requestFeeds",
 			"setTimeWindow",
+			"setDocket",
 			"setFeedItem",
 			"addFeeds",
 			"deleteFeed",
@@ -27,6 +28,7 @@ contextBridge.exposeInMainWorld("api", {
 			"updateBar",
 			"sendFeeds",
 			"receiveDefaults",
+			"updateLinks",
 		];
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
