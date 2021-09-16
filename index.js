@@ -290,7 +290,7 @@ autoUpdater.on("update-downloaded", (event, releaseNotes, releaseName) => {
 });
 
 autoUpdater.on("error", (message) => {
-	console.error("Someting went wrote with an automatic update.");
+	console.error("Someting went wrong with an automatic update.");
 	console.error(message);
 });
 
