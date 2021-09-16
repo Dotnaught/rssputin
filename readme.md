@@ -8,11 +8,13 @@ The app has been setup to ingest some sources that require customization, becaus
 
 Version 1.0 implements RSS/Atom feed aggregation but doesn't include webpage change detection like its predecessor.
 
+Version 1.0.5 adds support for handling RSS feeds from US courts. When entering a court RSS URL in the Feeds window, use the "docket" label in the Mode field and that feed will show up separately from "publication" and "aggregator" feeds. Court feeds tend to have a lot of items so you'll likely want to apply some filter terms in the Feed window's Filter input, to limit what gets displayed so it's more readable. Filtering looks for words in both the Title and Author columns, and for "docket" feeds, the Author column is populated with a legal filing descriptor (e.g. "complaint" or "order"). Entering "complaint" as a filter term is a good way to avoid seeing every single filing in a given court feed.
+
 <img src="https://github.com/Dotnaught/rssputin/blob/main/assets/rssputin_screenshot.png" width="800" />
 
 ### Prerequisites
 
-To build RSSputin, Node.js is required. It's been tested with v12.18.3.
+To build RSSputin, Node.js is required. It's been tested with v14.17.5.
 
 ```
 Node.js
@@ -48,7 +50,7 @@ To build RSSputin as a desktop app, run the script for the appropriate platform 
 
 ## Authors
 
-* **Thomas Claburn** - *Version 1.0.0* - [Dotnaught](https://github.com/Dotnaught)
+* **Thomas Claburn** - *Version 1.0.5* - [Dotnaught](https://github.com/Dotnaught)
 
 ## License
 
