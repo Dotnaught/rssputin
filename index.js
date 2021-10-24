@@ -7,7 +7,6 @@ const {
 	BrowserWindow,
 	Menu,
 	dialog,
-	net,
 	ipcMain,
 	screen,
 	shell,
@@ -29,6 +28,97 @@ const config = require("./js/config");
 const DataStore = require("./js/datastore");
 const Store = require("electron-store");
 const store = new Store();
+
+//configure logging
+//macOS path ~/Library/Logs/{app name}/{process type}.log
+const log = require("electron-log");
+//log.transports.file.resolvePath = () => path.join(APP_DATA, "logs/main.log");
+//let appLogDirectory = log.transports.file.resolvePath; //path.join(app.getPath("userData"));
+
+let logfilePath = log.transports.file.getFile().path;
+let logDirectory = path.dirname(logfilePath);
+console.log(logfilePath);
+console.log(logDirectory);
+//console.log(log);
+
+log.info("Hello, log");
+log.warn("Some problem appears");
+log.debug("A debug error");
+log.error("An error");
+log.info("Hello, log 2");
+log.warn("Some problem appears 2");
+log.debug("A debug error 2");
+log.error("An error 2");
+
+log.catchErrors({
+	showDialog: false,
+	onError(error, versions, submitIssue) {
+		electron.dialog
+			.showMessageBox({
+				title: "An error occurred",
+				message: error.message,
+				detail: error.stack,
+				type: "error",
+				buttons: ["Ignore", "Report", "Exit"],
+			})
+			.then((result) => {
+				if (result.response === 1) {
+					submitIssue("https://github.com/dotnaught/rssputin/issues/new", {
+						title: `Error report for ${versions.app}`,
+						body:
+							"Error:\n```" + error.stack + "\n```\n" + `OS: ${versions.os}`,
+					});
+					return;
+				}
+
+				if (result.response === 2) {
+					electron.app.quit();
+				}
+			});
+	},
+});
+
+//delete log files created more than one week ago
+function deleteOldLogs() {
+	let files = fs.readdirSync(logDirectory);
+	files.forEach((file) => {
+		try {
+			const stats = fs.statSync(logfilePath);
+
+			console.log(`File Data Last Modified: ${stats.mtime}`);
+			console.log(`File Status Last Modified: ${stats.ctime}`);
+			console.log(`File Size: ${stats.size}`);
+			if (stats.size > 1200) {
+				try {
+					let fileWithPath = path.join(logDirectory, file);
+					console.log(`Modifying ${fileWithPath}`);
+					const data = fs.readFileSync(
+						fileWithPath,
+						"utf8",
+						function (err, data) {
+							if (err) {
+								throw err;
+							}
+						}
+					);
+
+					let linesCount = data.split("\n").length;
+					let linesToCut = linesCount - 1000 > 0 ? linesCount - 1000 : 0;
+					console.log(`${linesCount} lines in file`);
+					console.log(`${linesToCut} lines to be removed`);
+					let linesToKeep = data.split("\n").slice(linesToCut).join("\n");
+					console.log(linesToKeep);
+					fs.writeFileSync(fileWithPath, linesToKeep);
+				} catch (err) {
+					console.error(`Could not delete ${file}`, err);
+				}
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	});
+}
+deleteOldLogs();
 
 const {
 	is,
@@ -142,7 +232,9 @@ const createMainWindow = async () => {
 	});
 
 	win.once("ready-to-show", () => {
-		autoUpdater.checkForUpdatesAndNotify();
+		autoUpdater.checkForUpdatesAndNotify().catch((err) => {
+			console.error(`Something went wrong`, err);
+		});
 	});
 
 	win.on("ready-to-show", () => {
@@ -271,7 +363,9 @@ ipcMain.on("openFeedWindow", (event, args) => {
 });
 
 ipcMain.on("restartApp", (event, args) => {
-	autoUpdater.quitAndInstall();
+	autoUpdater.quitAndInstall().catch((err) => {
+		console.error(`Something went wrong: `, err);
+	});
 });
 
 autoUpdater.on("update-downloaded", (event, releaseNotes, releaseName) => {
@@ -284,9 +378,18 @@ autoUpdater.on("update-downloaded", (event, releaseNotes, releaseName) => {
 			"A new version of RSSputin has been downloaded. Restart now to update.",
 	};
 
-	dialog.showMessageBox(dialogOpts).then((returnValue) => {
-		if (returnValue.response === 0) autoUpdater.quitAndInstall();
-	});
+	dialog
+		.showMessageBox(dialogOpts)
+		.then((returnValue) => {
+			if (returnValue.response === 0) {
+				autoUpdater.quitAndInstall().catch((err) => {
+					console.error(`Something went wrong: `, err);
+				});
+			}
+		})
+		.catch((err) => {
+			console.error(`Something went wrong: `, err);
+		});
 });
 
 autoUpdater.on("error", (message) => {
