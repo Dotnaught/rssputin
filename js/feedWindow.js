@@ -103,6 +103,9 @@ let flipString = (e) => {
       newval = 'docket';
       break;
     case 'docket':
+      newval = 'atemporal';
+      break;
+    case 'atemporal':
       newval = 'publication';
       break;
   }
@@ -298,7 +301,6 @@ let addRow = (e) => {
       let isValid = window.api.sendSync('validate', feed);
       valid = row[i]['textContent'] == 'true' ? true : isValid;
       console.log('valid', valid, isValid, feed);
-      sleep(5000);
     }
     if (row[i]['attributes']['data-key'].value === 'color') {
       // eslint-disable-next-line no-unused-vars
@@ -319,6 +321,9 @@ let addRow = (e) => {
           break;
         case 'docket':
           mode = 'docket';
+          break;
+        case 'atemporal':
+          mode = 'atemporal';
           break;
       }
     }
@@ -378,11 +383,3 @@ let deleteRow = (e) => {
     console.error('Generic error: ' + error);
   }
 };
-
-function sleep(milliseconds) {
-  const date = Date.now();
-  let currentDate = null;
-  do {
-    currentDate = Date.now();
-  } while (currentDate - date < milliseconds);
-}

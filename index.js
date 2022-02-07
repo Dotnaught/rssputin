@@ -13,6 +13,7 @@ const {
   globalShortcut,
   Notification,
 } = require('electron');
+const crypto = require('crypto');
 
 // Prevent multiple instances of the app
 if (!app.requestSingleInstanceLock()) {
@@ -44,10 +45,11 @@ log.warn("Some problem appears");
 log.debug("A debug error");
 log.error("An error");
 */
+
 log.catchErrors({
-  showDialog: false,
+  showDialog: true,
   onError(error, versions, submitIssue) {
-    electron.dialog
+    dialog
       .showMessageBox({
         title: 'An error occurred',
         message: error.message,
@@ -65,7 +67,7 @@ log.catchErrors({
         }
 
         if (result.response === 2) {
-          electron.app.quit();
+          app.quit();
         }
       });
   },
@@ -160,7 +162,7 @@ app.whenReady().then(() => {
 */
 
 unhandled();
-debug();
+//debug({ devToolsMode: 'detach' }); //moved to after windows are created
 contextMenu();
 
 // Note: Must match `build.appId` in package.json
@@ -184,7 +186,10 @@ const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
 const valid = validate(rssdb);
-if (!valid) console.log('validation errors', validate.errors);
+if (!valid) {
+  console.log('validation errors', validate.errors);
+  log.error('validation errors', validate.errors);
+}
 
 // .json file name at ~/Library/Application\ Support/rssputin/rssputinDB.json
 const feedData = new DataStore({ name: 'rssputinDB' });
@@ -193,6 +198,7 @@ const initObject = {
   feed: 'Enter valid feed',
   visible: true,
   valid: false,
+  color: '#0000aa',
   domain: '',
   filterList: '',
   mode: 'publication',
@@ -245,6 +251,7 @@ const createMainWindow = async () => {
       console.error(`Something went wrong`, err);
       log.error(err);
     });
+    debug();
   });
 
   win.on('ready-to-show', () => {
@@ -339,6 +346,7 @@ async function isFeedValid(arg) {
     )
     .catch((err) => {
       console.log('err', err);
+      log.error(err);
       return false;
     });
 }
@@ -349,6 +357,7 @@ ipcMain.on('validate', async (event, arg) => {
     event.returnValue = response;
   } catch (err) {
     console.log(err);
+    log.error(err);
     event.returnValue = false;
   }
 });
@@ -358,8 +367,8 @@ ipcMain.on('requestFeeds', (event, args) => {
   feedWindow.webContents.send('sendFeeds', feeds);
 });
 
-ipcMain.on('setDocket', (event, args) => {
-  store.set('docketOnly', args);
+ipcMain.on('setFeedMode', (event, args) => {
+  store.set('feedMode', args);
   mainWindow.close();
   setMainWindow();
 });
@@ -378,7 +387,6 @@ ipcMain.on('setTimeWindow', (event, args) => {
 });
 
 ipcMain.on('storeWidthData', (event, args) => {
-  console.log(args);
   store.set(args.id, args.w);
   store.set(args.nxid, args.nxw);
 });
@@ -402,6 +410,7 @@ ipcMain.on('openFeedWindow', (event, args) => {
 ipcMain.on('restartApp', (event, args) => {
   autoUpdater.quitAndInstall().catch((err) => {
     console.error(`Something went wrong: `, err);
+    log.error(err);
   });
 });
 
@@ -420,6 +429,7 @@ autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
       if (returnValue.response === 0) {
         autoUpdater.quitAndInstall().catch((err) => {
           console.error(`Something went wrong: `, err);
+          log.error(err);
         });
       }
     })
@@ -451,8 +461,8 @@ function setDefaults() {
   store.set('Author', Author);
   let Source = store.get('Source') || '15%';
   store.set('Source', Source);
-  let docketOnly = store.get('docketOnly') || false;
-  store.set('docketOnly', docketOnly);
+  let feedMode = store.get('feedMode') || 'publication';
+  store.set('feedMode', feedMode);
 }
 
 function resetColumnWidths() {
@@ -620,6 +630,12 @@ const debugSubmenu = [
     label: 'Show App Data',
     click() {
       shell.openPath(userData);
+    },
+  },
+  {
+    label: 'Show Log Data',
+    click() {
+      shell.openPath(logfilePath);
     },
   },
   {
@@ -825,9 +841,12 @@ const setMainWindow = async () => {
   await app.whenReady().then(async () => {
     // Function to open links in browser
     const handleRedirect = (event, url) => {
+      //event.sender.getURL() refers to the current window file path
       if (url !== event.sender.getURL()) {
         shell.openExternal(url);
-        mainWindow.webContents.send('updateLinks', url);
+        let hash = crypto.createHash('sha1').update(url).digest('hex');
+
+        mainWindow.webContents.send('updateLinks', hash);
 
         event.preventDefault();
       }
@@ -841,14 +860,15 @@ const setMainWindow = async () => {
     //setDefaults
     setDefaults();
     let timeWindow = store.get('timeWindow');
-    let docketOnly = store.get('docketOnly');
+    let feedMode = store.get('feedMode');
+
     // Create the mainWindow
     mainWindow = await createMainWindow();
     // Intercept navigation event so the URL opens in the browser
     mainWindow.webContents.on('will-navigate', handleRedirect);
     let defaultsObj = {
       timeWindow: timeWindow,
-      docketOnly: docketOnly,
+      feedMode: feedMode,
       hoursAgo: store.get('hours'),
       Title: store.get('Title'),
       Author: store.get('Author'),
@@ -859,7 +879,7 @@ const setMainWindow = async () => {
     // Fetch and process RSS feeds
     rsslib
       .getAllFeeds(feedData.getFeeds(), mainWindow)
-      .then((feeds) => rsslib.processFeeds(feeds, timeWindow, docketOnly))
+      .then((feeds) => rsslib.processFeeds(feeds, timeWindow, feedMode))
       .then((result) => mainWindow.webContents.send('fromMain', result))
       .catch((error) => console.error(error.message));
   });

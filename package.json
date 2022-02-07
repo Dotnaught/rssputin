@@ -1,7 +1,7 @@
 {
 	"name": "rssputin",
 	"productName": "rssputin",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"description": "An RSS headline aggregator",
 	"license": "MIT",
 	"repository": {
@@ -27,7 +27,6 @@
 		"publish": "electron-builder --macos --linux --windows --publish always"
 	},
 	"dependencies": {
-		"@octokit/rest": "^18.9.0",
 		"ajv": "^8.6.2",
 		"date-fns": "^2.23.0",
 		"electron-context-menu": "^3.1.1",
@@ -44,7 +43,7 @@
 		"xml2js": "^0.4.23"
 	},
 	"devDependencies": {
-		"electron": "^16.0.4",
+		"electron": "^17.0.0",
 		"electron-builder": "^22.9.1",
 		"eslint": "^8.0.1"
 	},

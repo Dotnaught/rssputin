@@ -36,9 +36,32 @@
           class="w-full flex-none text-2xl text-pink-500 mb-1.5 text-center justify-center"
         ></h2>
       </span>
-      <span>
+      <div class="flex flex-row">
 
-
+        <div class="flex justify-center px-3 py-3 space-x-5.5">
+          <div class="mb-3 xl:w-96">
+             <select id="dropdown" class="form-select appearance-none
+               block
+               w-full
+               px-3
+               py-1.5
+               text-base
+               font-normal
+               text-gray-700
+               bg-white bg-clip-padding bg-no-repeat
+               border border-solid border-gray-300
+               rounded
+               transition
+               ease-in-out
+               m-0
+               focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" aria-label="Default select example">
+                 <option selected value="publication">publication</option>
+                 <option value="aggregator">aggregator</option>
+                 <option value="docket">docket</option>
+                 <option value="atemporal">atemporal</option>
+             </select>
+           </div>
+         </div>
     
         <div id="queryAndButton" class="relative flex w-full flex-wrap items-stretch mb-3">
           <!--
@@ -61,13 +84,15 @@
           >
             Clear
           </button>
-          
+          <!--
             <div class="form-control">
               <label class="inline-flex items-center mt-5 ml-8">
                 <input id="checkbox" type="checkbox" class="form-checkbox h-5 w-5 text-red-600" checked><span class="ml-2 text-gray-700">Docket View</span>
             </label>
               
           </div>
+        -->
+        
         </div>
 
         <!--<input placeholder="Search" id="query" type="text" class="validate" /> -->
@@ -75,7 +100,7 @@
         
 
         <!--- <a id="clear" href="#">Clear</a>-->
-      </span>
+      </div>
 
       <table>
         <!--

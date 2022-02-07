@@ -10,6 +10,8 @@ Version 1.0 implements RSS/Atom feed aggregation but doesn't include webpage cha
 
 Version 1.0.5 adds support for handling RSS feeds from US courts. When entering a court RSS URL in the Feeds window, use the "docket" label in the Mode field and that feed will show up separately from "publication" and "aggregator" feeds. Court feeds tend to have a lot of items so you'll likely want to apply some filter terms in the Feed window's Filter input, to limit what gets displayed so it's more readable. Filtering looks for words in both the Title and Author columns, and for "docket" feeds, the Author column is populated with a legal filing descriptor (e.g. "complaint" or "order"). Entering "complaint" as a filter term is a good way to avoid seeing every single filing in a given court feed.
 
+Version 1.0.7 includes various changes. There's now a dropdown menu for choosing what gets displayed, based on tags assigned when entering a feed in the Feed Window. Choices include: "publication", "aggregator", "docket", and "atemporal". "publication" includes both "publication" and "aggregator" feeds (because the "aggregator" tag is more about whick links get pulled from the RSS feed). "docket" is intended for court feeds. "atemporal" is for ArXiv and other sources that publish multiple items at the same time, so they can't be sorted by recency. There's also a logging service that's partly implemented, for diagnosing auto-update errors and the like. And feeds that have been misidentified as arriving at a future date have been moved to the end of the display window.
+
 <img src="https://github.com/Dotnaught/rssputin/blob/main/assets/rssputin_screenshot.png" width="800" />
 
 ### Prerequisites
@@ -50,7 +52,7 @@ To build RSSputin as a desktop app, run the script for the appropriate platform 
 
 ## Authors
 
-* **Thomas Claburn** - *Version 1.0.5* - [Dotnaught](https://github.com/Dotnaught)
+* **Thomas Claburn** - *Version 1.0.7* - [Dotnaught](https://github.com/Dotnaught)
 
 ## License
 
