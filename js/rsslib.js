@@ -13,9 +13,14 @@ let parser = new Parser({
 
 const { formatDistance, differenceInHours } = require('date-fns');
 
-const getAllFeeds = async (urlList, win) => {
+const getAllFeeds = async (urlList, feedMode, win) => {
   const promises = urlList.map(async (entry) => {
-    if (entry.feed !== '' && entry.feed !== 'Enter valid feed' && entry.visible) {
+    if (
+      entry.feed !== '' &&
+      entry.feed !== 'Enter valid feed' &&
+      entry.visible &&
+      entry.mode === feedMode
+    ) {
       try {
         if (entry.feed == 'https://ekaprdweb01.eurekalert.org/rss/technology_engineering.xml') {
           parser.options.requestOptions = {

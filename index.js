@@ -878,7 +878,7 @@ const setMainWindow = async () => {
     mainWindow.webContents.send('receiveDefaults', defaultsObj);
     // Fetch and process RSS feeds
     rsslib
-      .getAllFeeds(feedData.getFeeds(), mainWindow)
+      .getAllFeeds(feedData.getFeeds(), feedMode, mainWindow)
       .then((feeds) => rsslib.processFeeds(feeds, timeWindow, feedMode))
       .then((result) => mainWindow.webContents.send('fromMain', result))
       .catch((error) => console.error(error.message));
