@@ -22,13 +22,14 @@ const getAllFeeds = async (urlList, feedMode, win) => {
       entry.mode === feedMode
     ) {
       try {
-        if (entry.feed == 'https://ekaprdweb01.eurekalert.org/rss/technology_engineering.xml') {
-          parser.options.requestOptions = {
-            rejectUnauthorized: false,
-          };
-        } else {
-          parser.options.requestOptions = {};
-        }
+        // if (entry.feed == 'https://ekaprdweb01.eurekalert.org/rss/technology_engineering.xml') {
+        //   parser.options.requestOptions = {
+        //     rejectUnauthorized: false,
+        //   };
+        // } else {
+        //   parser.options.requestOptions = {};
+        // }
+        parser.options.requestOptions = {};
 
         const rssResult = await parser.parseURL(entry.feed);
 
