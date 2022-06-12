@@ -151,10 +151,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
   feeds.forEach((feed) => {
     if (feed === undefined) {
       return;
-    } else if (
-      feedMode === 'publication' &&
-      (feed.meta.mode === 'docket' || feed.meta.mode === 'atemporal')
-    ) {
+    } else if (feedMode === 'publication' && feed.meta.mode !== 'publication') {
       return;
     } else if (feedMode === 'aggregator' && feed.meta.mode !== 'aggregator') {
       return;
@@ -163,7 +160,6 @@ function processFeeds(feeds, timeWindow, feedMode) {
     } else if (feedMode === 'atemporal' && feed.meta.mode !== 'atemporal') {
       return;
     }
-
     //filter for articles with words in list
     let filterList = feed.meta.filterList;
 
