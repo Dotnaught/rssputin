@@ -33,7 +33,7 @@
 		"electron-debug": "^3.2.0",
 		"electron-fetch": "^1.7.4",
 		"electron-log": "^4.4.7",
-		"electron-notarize": "^1.2.1",
+		"electron-notarize": "^1.2.2",
 		"electron-store": "^8.0.2",
 		"electron-unhandled": "^4.0.1",
 		"electron-updater": "^5.0.1",
@@ -43,8 +43,9 @@
 		"xml2js": "^0.4.23"
 	},
 	"devDependencies": {
+		"@electron/notarize": "^1.2.3",
 		"electron": "^22.0.0",
-		"electron-builder": "^24.0.0-alpha.8",
+		"electron-builder": "^23.6.0",
 		"eslint": "^8.17.0"
 	},
 	"build": {
@@ -62,11 +63,12 @@
 			"entitlements": "build/entitlements.mac.plist",
 			"entitlementsInherit": "build/entitlements.mac.plist",
 			"type": "distribution",
-			"icon": "build/icon.icns"
+			"icon": "build/icon.icns",
+			"provisioningProfile": "build/rssputin_dev.provisionprofile"
 		},
 		"mas": {
 			"entitlements": "build/entitlements.mas.plist",
-			"provisioningProfile": "build/Lot_49_Labs_Mac_Distribution.provisionprofile",
+			"provisioningProfile": "build/rssputin_mas.provisionprofile",
 			"type": "distribution",
 			"category": "public.app-category.news"
 		},
