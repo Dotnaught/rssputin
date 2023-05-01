@@ -220,43 +220,6 @@ let mainWindow;
 let feedWindow;
 let menu;
 
-//auto updater
-function sendStatusToWindow(text) {
-  log.info(text);
-  mainWindow.webContents.send('message', text);
-}
-
-if (app.isPackaged) {
-  autoUpdater.on('checking-for-update', () => {
-    sendStatusToWindow('Checking for update...');
-  });
-  autoUpdater.on('update-available', (info) => {
-    sendStatusToWindow('Update available.');
-  });
-  autoUpdater.on('update-not-available', (info) => {
-    sendStatusToWindow('Update not available.');
-  });
-  autoUpdater.on('error', (err) => {
-    sendStatusToWindow('Error in auto-updater. ' + err);
-  });
-  autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = 'Download speed: ' + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + '/' + progressObj.total + ')';
-    sendStatusToWindow(log_message);
-  });
-  autoUpdater.on('update-downloaded', (info) => {
-    sendStatusToWindow('Update downloaded');
-  });
-
-  app.on('ready', function () {
-    autoUpdater.checkForUpdatesAndNotify();
-  });
-} else {
-  console.log('not packaged');
-}
-//end auto updater
-
 const createMainWindow = async () => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
@@ -287,6 +250,14 @@ const createMainWindow = async () => {
     },
   });
 
+  win.once('ready-to-show', () => {
+    autoUpdater.checkForUpdatesAndNotify().catch((err) => {
+      console.error(`Something went wrong`, err);
+      log.error(err);
+    });
+    debug();
+  });
+
   win.on('ready-to-show', () => {
     win.show();
     const menuItem = menu.getMenuItemById('mainWindow');
@@ -299,10 +270,6 @@ const createMainWindow = async () => {
     mainWindow = undefined;
     const menuItem = menu.getMenuItemById('mainWindow');
     menuItem.enabled = true;
-  });
-
-  win.on('message', (data) => {
-    console.log('!', data);
   });
 
   await win.loadFile(path.join(__dirname, './html/mainWindow.html'));
@@ -451,6 +418,36 @@ ipcMain.on('restartApp', (event, args) => {
   });
 });
 
+autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+  const dialogOpts = {
+    type: 'info',
+    buttons: ['Restart', 'Not Now. On next Restart'],
+    title: 'Update',
+    message: process.platform === 'win32' ? releaseNotes : releaseName,
+    detail: 'A new version of RSSputin has been downloaded. Restart now to update.',
+  };
+
+  dialog
+    .showMessageBox(dialogOpts)
+    .then((returnValue) => {
+      if (returnValue.response === 0) {
+        autoUpdater.quitAndInstall().catch((err) => {
+          console.error(`Something went wrong: `, err);
+          log.error(err);
+        });
+      }
+    })
+    .catch((err) => {
+      console.error(`Something went wrong: `, err);
+      log.error(err);
+    });
+});
+
+autoUpdater.on('error', (message) => {
+  console.error('Someting went wrong with an automatic update.');
+  console.error(message);
+  log.error(message);
+});
 /// incorporate menu.js
 const showPreferences = () => {
   // Show the app's preferences here
