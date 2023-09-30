@@ -1,89 +1,89 @@
 {
-	"name": "rssputin",
-	"productName": "rssputin",
-	"version": "1.0.11",
-	"description": "An RSS headline aggregator",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "git://github.com/Dotnaught/rssputin.git"
-	},
-	"bugs": {
-		"url": "https://github.com/Dotnaught/rssputin/issues"
-	},
-	"homepage": "https://github.com/Dotnaught/rssputin#readme",
-	"author": {
-		"name": "Thomas Claburn",
-		"email": "tc@lot49.com",
-		"url": "https://lot49.com"
-	},
-	"scripts": {
-		"postinstall": "electron-builder install-app-deps",
-		"lint": "eslint",
-		"test": "npm run lint",
-		"start": "electron .",
-		"pack": "electron-builder --dir",
-		"dist": "electron-builder --macos --linux --windows --publish never",
-		"publish": "electron-builder --macos --linux --windows --publish always"
-	},
-	"dependencies": {
-		"ajv": "^8.11.0",
-		"date-fns": "^2.28.0",
-		"electron-context-menu": "^3.2.0",
-		"electron-debug": "^3.2.0",
-		"electron-fetch": "^1.7.4",
-		"electron-log": "^4.4.7",
-		"electron-notarize": "^1.2.2",
-		"electron-store": "^8.0.2",
-		"electron-unhandled": "^4.0.1",
-		"electron-updater": "^5.0.1",
-		"electron-util": "^0.17.2",
-		"rss-parser": "^3.12.0",
-		"ssl-root-cas": "^1.3.1",
-		"xml2js": "^0.6.0"
-	},
-	"devDependencies": {
-		"@electron/notarize": "^1.2.3",
-		"electron": "^25.8.1",
-		"electron-builder": "^v24.3.0",
-		"eslint": "^8.17.0"
-	},
-	"build": {
-		"appId": "com.lot49.rssputin",
-		"afterSign": "scripts/notarize.js",
-		"mac": {
-			"category": "public.app-category.news",
-			"target": [
-				"zip",
-				"dmg"
-			],
-			"darkModeSupport": false,
-			"hardenedRuntime": true,
-			"gatekeeperAssess": false,
-			"entitlements": "build/entitlements.mac.plist",
-			"entitlementsInherit": "build/entitlements.mac.plist",
-			"type": "distribution",
-			"icon": "build/icon.icns",
-			"provisioningProfile": "build/rssputin_dev.provisionprofile"
-		},
-		"mas": {
-			"entitlements": "build/entitlements.mas.plist",
-			"provisioningProfile": "build/rssputin_mas.provisionprofile",
-			"type": "distribution",
-			"category": "public.app-category.news"
-		},
-		"linux": {
-			"target": [
-				"AppImage",
-				"deb"
-			],
-			"category": "Network"
-		}
-	},
-	"publish": [
-		{
-			"provider": "github",
-			"owner": "Dotnaught"
-		}
-	]
+  "name": "rssputin",
+  "productName": "rssputin",
+  "version": "1.0.11",
+  "description": "An RSS headline aggregator",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Dotnaught/rssputin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Dotnaught/rssputin/issues"
+  },
+  "homepage": "https://github.com/Dotnaught/rssputin#readme",
+  "author": {
+    "name": "Thomas Claburn",
+    "email": "tc@lot49.com",
+    "url": "https://lot49.com"
+  },
+  "scripts": {
+    "postinstall": "electron-builder install-app-deps",
+    "lint": "eslint",
+    "test": "npm run lint",
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --macos --linux --windows --publish never",
+    "publish": "electron-builder --macos --linux --windows --publish always"
+  },
+  "dependencies": {
+    "ajv": "^8.11.0",
+    "date-fns": "^2.28.0",
+    "electron-context-menu": "^3.2.0",
+    "electron-debug": "^3.2.0",
+    "electron-fetch": "^1.7.4",
+    "electron-log": "^4.4.7",
+    "electron-notarize": "^1.2.2",
+    "electron-store": "^8.0.2",
+    "electron-unhandled": "^4.0.1",
+    "electron-updater": "^6.1.4",
+    "electron-util": "^0.17.2",
+    "rss-parser": "^3.12.0",
+    "ssl-root-cas": "^1.3.1",
+    "xml2js": "^0.6.0"
+  },
+  "devDependencies": {
+    "@electron/notarize": "^2.1.0",
+    "electron": "^26.2.4",
+    "electron-builder": "^v24.6.4",
+    "eslint": "^8.17.0"
+  },
+  "build": {
+    "appId": "com.lot49.rssputin",
+    "afterSign": "scripts/notarize.js",
+    "mac": {
+      "category": "public.app-category.news",
+      "target": [
+        "zip",
+        "dmg"
+      ],
+      "darkModeSupport": false,
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "type": "distribution",
+      "icon": "build/icon.icns",
+      "provisioningProfile": "build/rssputin_dev.provisionprofile"
+    },
+    "mas": {
+      "entitlements": "build/entitlements.mas.plist",
+      "provisioningProfile": "build/rssputin_mas.provisionprofile",
+      "type": "distribution",
+      "category": "public.app-category.news"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Network"
+    }
+  },
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "Dotnaught"
+    }
+  ]
 }
