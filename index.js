@@ -296,7 +296,7 @@ const createFeedWindow = async () => {
 
   feedWindow.on('ready-to-show', () => {
     let feeds = feedData.getFeeds();
-    if (feeds === []) {
+    if (feeds && Object.keys(feeds).length === 0) {
       feeds = [initObject];
     }
 
