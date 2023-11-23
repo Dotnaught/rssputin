@@ -10,7 +10,7 @@ window.api.receive('updateBar', (args) => {
   let titleText = document.getElementById('titleText');
   titleText.textContent = args[0] + '/' + args[1];
   if (progress === 100) {
-    titleText.textContent = 'RSSPutin';
+    titleText.textContent = 'RSSputin';
   }
 });
 

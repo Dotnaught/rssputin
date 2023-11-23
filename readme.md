@@ -16,7 +16,7 @@ Version 1.0.7 includes various changes. There's now a dropdown menu for choosing
 
 ### Prerequisites
 
-To build RSSputin, Node.js is required. It's been tested with v16.17.1.
+To build RSSputin, Node.js is required.
 
 ```
 Node.js
@@ -52,7 +52,7 @@ To build RSSputin as a desktop app, run the script for the appropriate platform 
 
 ## Authors
 
-* **Thomas Claburn** - *Version 1.0.9* - [Dotnaught](https://github.com/Dotnaught)
+* **Thomas Claburn** - *Version 1.0.12* - [Dotnaught](https://github.com/Dotnaught)
 
 ## License
 

@@ -50,7 +50,7 @@ log.debug("A debug error");
 log.error("An error");
 */
 
-log.catchErrors({
+log.errorHandler.startCatching({
   showDialog: true,
   onError(error, versions, submitIssue) {
     dialog
