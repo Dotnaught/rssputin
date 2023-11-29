@@ -843,9 +843,10 @@ if (is.development) {
 const setMainWindow = async () => {
   await app.whenReady().then(async () => {
     // Function to open links in browser
-    const handleRedirect = (event, url) => {
+    const handleRedirect = (event) => {
       //event.sender.getURL() refers to the current window file path
-      if (url !== event.sender.getURL()) {
+      let url = event.url;
+      if (url !== mainWindow.webContents.getURL()) {
         shell.openExternal(url);
         let hash = crypto.createHash('sha1').update(url).digest('hex');
 
