@@ -6,7 +6,7 @@ const Parser = require('rss-parser');
 let parser = new Parser({
   customFields: {
     feed: [['dc:date', 'isoDate']],
-    item: ['pubDate'],
+    item: [['pubDate'], ['dc:creator', 'creator']],
   },
   timeout: 10000,
 });
@@ -206,7 +206,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
 
       //create the feed object to be displayed
       let obj = {};
-
+      console.log('!', i);
       let now = new Date().getTime(); //milliseconds
 
       let pubTime; // typeof i.isoDate !== undefined ? i.isoDate : feed.isoDate;
@@ -227,8 +227,11 @@ function processFeeds(feeds, timeWindow, feedMode) {
       } else if (i.author !== undefined) {
         obj.author = i.author;
       } else if (i.creator !== undefined) {
-        //for arXiv
-        obj.author = i.creator;
+        //for arXiv .replaceAll('"', '')
+        obj.author = JSON.stringify(i.creator['a'][0]['_'])
+          .replace(/^["']|["']$/g, '')
+          .replace(/\\+/g, '')
+          .replace(/\\'/g, '');
       } else if (feed.meta.mode === 'docket') {
         //add type of court filing to unused author column
         obj.author = i.content.substring(1, i.content.indexOf(']'));
@@ -236,10 +239,10 @@ function processFeeds(feeds, timeWindow, feedMode) {
         obj.author = '';
       }
 
-      if (obj.author.includes('/u/')) {
+      if (typeof obj.author == 'string' && obj.author.includes('/u/')) {
         obj.author = obj.author.split('/u/').pop();
       }
-      if (obj.author.startsWith('By ')) {
+      if (typeof obj.author == 'string' && obj.author.startsWith('By ')) {
         obj.author = obj.author.split('By ').pop();
       }
 
