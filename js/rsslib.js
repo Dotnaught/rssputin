@@ -206,7 +206,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
 
       //create the feed object to be displayed
       let obj = {};
-      console.log('!', i);
+
       let now = new Date().getTime(); //milliseconds
 
       let pubTime; // typeof i.isoDate !== undefined ? i.isoDate : feed.isoDate;
@@ -226,7 +226,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
         obj.author = i.author.name[0];
       } else if (i.author !== undefined) {
         obj.author = i.author;
-      } else if (i.creator !== undefined) {
+      } else if (i.creator !== undefined && feed.meta.mode === 'atemporal') {
         //for arXiv .replaceAll('"', '')
         obj.author = JSON.stringify(i.creator['a'][0]['_'])
           .replace(/^["']|["']$/g, '')
