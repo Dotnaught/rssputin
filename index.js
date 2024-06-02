@@ -255,7 +255,7 @@ const createMainWindow = async () => {
       console.error(`Something went wrong`, err);
       log.error(err);
     });
-    debug();
+    //debug();
   });
 
   win.on('ready-to-show', () => {

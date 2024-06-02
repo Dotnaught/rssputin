@@ -6,7 +6,7 @@ const Parser = require('rss-parser');
 let parser = new Parser({
   customFields: {
     feed: [['dc:date', 'isoDate']],
-    item: [['pubDate'], ['dc:creator', 'creator']],
+    item: [['dc:creator', 'creator']],
   },
   timeout: 10000,
 });
@@ -14,8 +14,13 @@ let parser = new Parser({
 const { formatDistance, differenceInHours } = require('date-fns');
 
 const getAllFeeds = async (urlList, feedMode, win) => {
+  console.assert(urlList.length > 0, 'urlList is empty');
+  console.assert(feedMode !== undefined, 'feedmode is underfined');
+  console.assert(win !== undefined, 'win is underfined');
+  let errors = [];
   const promises = urlList.map(async (entry) => {
     if (
+      entry.feed !== undefined &&
       entry.feed !== '' &&
       entry.feed !== 'Enter valid feed' &&
       entry.visible &&
@@ -30,18 +35,23 @@ const getAllFeeds = async (urlList, feedMode, win) => {
         //   parser.options.requestOptions = {};
         // }
         parser.options.requestOptions = {};
-
+        console.log(`Fetching ${entry.feed}`);
         const rssResult = await parser.parseURL(entry.feed);
 
         const combinedResults = {
           res: rssResult,
           meta: entry,
+          errors: errors,
         };
-        //console.log(rssResult);
+        console.assert(combinedResults.res !== undefined, 'res is underfined');
+        console.assert(combinedResults.meta !== undefined, 'meta is underfined');
+        //console.log(combinedResults);
         return combinedResults;
       } catch (e) {
-        console.error(e);
         console.log(`Error at ${entry.feed}`);
+        console.error(`${e.name}: ${e.message}`);
+        //push error to array
+        errors.push({ feed: entry.feed, error: e.message });
       }
     }
   });
@@ -162,8 +172,11 @@ function processFeeds(feeds, timeWindow, feedMode) {
     }
     //filter for articles with words in list
     let filterList = feed.meta.filterList;
-
+    console.log(`Processing ${feed.res.title}`);
+    console.log(Object.keys(feed.res));
+    console.log('Done processing feed');
     feed.res.items.forEach((i) => {
+      //print item to console
       let altURLs = undefined;
       let altLink = undefined;
       let aggregatorLink = undefined;
@@ -178,6 +191,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
             )
           ),
         ];
+        //console.log(altURLs + ' ' + feed.res.title);
 
         switch (feed.res.title) {
           case 'Hacker News':
@@ -201,10 +215,11 @@ function processFeeds(feeds, timeWindow, feedMode) {
             aggIndex = 1;
         }
         altLink = feed.meta.mode === 'aggregator' ? altURLs[linkIndex] : i.link;
+        console.assert(altLink !== undefined, 'altLink is underfined');
         aggregatorLink = altURLs[aggIndex];
       }
-
       //create the feed object to be displayed
+
       let obj = {};
 
       let now = new Date().getTime(); //milliseconds
@@ -221,14 +236,15 @@ function processFeeds(feeds, timeWindow, feedMode) {
       obj.published = pubTime;
 
       obj.pubtype = feed.meta.mode;
-
+      //console.log('checking author', i.author, i.creator);
       if (i.author !== undefined && i.author.name !== undefined) {
         obj.author = i.author.name[0];
       } else if (i.author !== undefined) {
         obj.author = i.author;
       } else if (i.creator !== undefined && feed.meta.mode === 'atemporal') {
         //for arXiv .replaceAll('"', '')
-        obj.author = JSON.stringify(i.creator['a'][0]['_'])
+        // i.creator['a'][0]['_']
+        obj.author = JSON.stringify(i.creator)
           .replace(/^["']|["']$/g, '')
           .replace(/\\+/g, '')
           .replace(/\\'/g, '');
@@ -259,14 +275,20 @@ function processFeeds(feeds, timeWindow, feedMode) {
         obj.title += '...';
       }
       //the RSS Item link
+
       obj.link = altLink && feed.meta.mode === 'aggregator' ? altLink : i.link;
+      if (obj.link === undefined) {
+        throw new Error('obj.link is underfined');
+      }
       obj.urlHash = crypto.createHash('sha1').update(obj.link).digest('hex');
 
+      //the RSS feed link
       let sourceURL = feed.res.link;
       obj.sourceDisplayText = getHostname(sourceURL);
       obj.sourceLink = getOrigin(sourceURL);
       obj.aggregatorLink = aggregatorLink;
       obj.feedTitle = feed.res.title;
+      console.assert(obj.feedTitle !== undefined, 'obj.feedTitle is underfined');
       //testing
       removeXMLInvalidChars(obj.title, true);
       obj.color = feed.meta.color;
@@ -291,6 +313,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
   arr.sort(function (a, b) {
     return b.published - a.published;
   });
+  console.log('Finished processing feeds');
   return arr;
 }
 
