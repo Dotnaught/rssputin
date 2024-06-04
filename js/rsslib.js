@@ -1,8 +1,7 @@
 /* eslint-disable no-control-regex */
-'use strict';
-const crypto = require('crypto');
+import crypto from 'node:crypto';
 
-const Parser = require('rss-parser');
+import Parser from 'rss-parser';
 let parser = new Parser({
   customFields: {
     feed: [['dc:date', 'isoDate']],
@@ -11,7 +10,7 @@ let parser = new Parser({
   timeout: 10000,
 });
 
-const { formatDistance, differenceInHours } = require('date-fns');
+import { formatDistance, differenceInHours } from 'date-fns';
 
 const getAllFeeds = async (urlList, feedMode, win) => {
   console.assert(urlList.length > 0, 'urlList is empty');
@@ -317,4 +316,4 @@ function processFeeds(feeds, timeWindow, feedMode) {
   return arr;
 }
 
-module.exports = { getAllFeeds, processFeeds };
+export default { getAllFeeds, processFeeds };

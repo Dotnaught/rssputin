@@ -1,8 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-'use strict';
-const path = require('path');
-const {
+//const path = require('path');
+import {
   app,
   BrowserWindow,
   Menu,
@@ -12,30 +11,51 @@ const {
   shell,
   globalShortcut,
   Notification,
-} = require('electron');
-const crypto = require('crypto');
+} from 'electron';
+
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+//const crypto = require('crypto');
+import crypto from 'node:crypto';
 
 // Prevent multiple instances of the app
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 }
-
-const fs = require('fs');
-const xml2js = require('xml2js');
-const fetch = require('electron-fetch').default;
-const { autoUpdater } = require('electron-updater');
-const unhandled = require('electron-unhandled');
-const debug = require('electron-debug');
-const contextMenu = require('electron-context-menu');
-const config = require('./js/config');
-const DataStore = require('./js/datastore');
-const Store = require('electron-store');
+//change these require statments to import statements
+//const fs = require('fs');
+import fs from 'node:fs';
+//const xml2js = require('xml2js');
+import xml2js from 'xml2js';
+//const fetch = require('electron-fetch').default;
+import fetch from 'electron-fetch';
+//const { autoUpdater } = require('electron-updater');
+//import { autoUpdater } from 'electron-updater';
+import pkg from 'electron-updater';
+const { autoUpdater } = pkg;
+//const unhandled = require('electron-unhandled');
+import unhandled from 'electron-unhandled';
+//const debug = require('electron-debug');
+import debug from 'electron-debug';
+//const contextMenu = require('electron-context-menu');
+import contextMenu from 'electron-context-menu';
+//const config = require('./js/config');
+import config from './js/config.js';
+//const DataStore = require('./js/datastore');import DataStore from './js/datastore';
+import DataStore from './js/datastore.js';
+//const Store = require('electron-store');
+import Store from 'electron-store';
 const store = new Store();
-const rsslib = require('./js/rsslib');
+//const rsslib = require('./js/rsslib');
+import rsslib from './js/rsslib.js';
 
 //configure logging
 //macOS path ~/Library/Logs/{app name}/{process type}.log
-const log = require('electron-log');
+//const log = require('electron-log');
+import log from 'electron-log';
 
 let logfilePath = log.transports.file.getFile().path;
 let logDirectory = path.dirname(logfilePath);
@@ -133,14 +153,14 @@ function deleteOldLogs() {
 }
 deleteOldLogs();
 
-const {
+import {
   is,
-  appMenu,
-  aboutMenuItem,
+  //appMenu,
+  //aboutMenuItem,
   openUrlMenuItem,
   openNewGitHubIssue,
-  debugInfo,
-} = require('electron-util');
+  //debugInfo,
+} from 'electron-util';
 
 //test url for github issue scanning, which may get implemented some day
 /*
@@ -175,7 +195,8 @@ app.setAppUserModelId('com.lot49.rssputin');
 //check schema
 const userData = app.getPath('userData') + '/rssputinDB.json';
 const configFile = app.getPath('userData') + '/config.json';
-const jsonSchema = require('./js/schema');
+//const jsonSchema = require('./js/schema');
+import jsonSchema from './js/schema.js';
 const schema = jsonSchema.schema;
 
 const resp = fs.readFileSync(userData, 'utf8', (err, data) => {
@@ -184,7 +205,8 @@ const resp = fs.readFileSync(userData, 'utf8', (err, data) => {
 });
 const rssdb = JSON.parse(resp);
 
-const Ajv = require('ajv');
+//const Ajv = require('ajv');
+import Ajv from 'ajv';
 const ajv = new Ajv();
 //console.log(rssdb);
 const validate = ajv.compile(schema);
@@ -245,7 +267,8 @@ const createMainWindow = async () => {
       contextIsolation: true, // Protect against prototype pollution
       enableRemoteModule: false, // Turn off remote
       worldSafeExecuteJavaScript: true, // Sanitize JavaScript
-      preload: path.join(__dirname, './js/preload.js'), // Use a preload script
+      nodeIntegrationInWorker: true,
+      preload: path.join(__dirname, '/js/preload.mjs'), // Use a preload script
       nativeWindowOpen: true,
     },
   });
@@ -272,7 +295,7 @@ const createMainWindow = async () => {
     menuItem.enabled = true;
   });
 
-  await win.loadFile(path.join(__dirname, './html/mainWindow.html'));
+  await win.loadFile(path.join(__dirname, '/html/mainWindow.html'));
 
   return win;
 };
@@ -289,7 +312,7 @@ const createFeedWindow = async () => {
       contextIsolation: true, // Protect against prototype pollution
       enableRemoteModule: false, // Turn off remote
       worldSafeExecuteJavaScript: true, // Sanitize JavaScript
-      preload: path.join(__dirname, './js/preload.js'), // Use a preload script
+      preload: path.join(__dirname, '/js', 'preload.mjs'), // Use a preload script
       nativeWindowOpen: true,
     },
   });
@@ -661,9 +684,7 @@ const debugSubmenu = [
     },
   },
 ];
-
-const macosTemplate = [
-  appMenu([
+/*appMenu([
     {
       label: 'Preferences…',
       accelerator: 'Command+,',
@@ -671,7 +692,29 @@ const macosTemplate = [
         showPreferences();
       },
     },
-  ]),
+  ])
+  */
+const macosTemplate = [
+  // { role: 'appMenu' }
+  ...(is.macos
+    ? [
+        {
+          label: app.name,
+          submenu: [
+            { role: 'about' },
+            { type: 'separator' },
+            { role: 'services' },
+            { type: 'separator' },
+            { role: 'hide' },
+            { role: 'hideOthers' },
+            { role: 'unhide' },
+            { type: 'separator' },
+            { role: 'quit' },
+          ],
+        },
+      ]
+    : []),
+  // { role: 'fileMenu' }
   {
     role: 'fileMenu',
     submenu: [

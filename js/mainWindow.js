@@ -1,8 +1,14 @@
-'use strict';
-
 let table = document.querySelector('table');
 let dropdown = document.getElementById('dropdown');
+//the line below produces an error in the console: Uncaught TypeError: Cannot read properties of undefined (reading 'receive')
+window.api = {
+  receive: function (eventName, callback) {
+    // Implementation of the receive method
+    console.log(eventName);
+  },
+};
 
+// Rest of your code...
 window.api.receive('updateBar', (args) => {
   let bar = document.getElementById('bar');
   let progress = (args[0] / args[1]) * 100;

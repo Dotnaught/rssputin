@@ -78,4 +78,4 @@ const testData = {
   ],
 };
 
-module.exports = { schema, testData };
+export default { schema, testData };
