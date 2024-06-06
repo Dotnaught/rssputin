@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-//const path = require('path');
+
 import {
   app,
   BrowserWindow,
@@ -18,7 +18,6 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-//const crypto = require('crypto');
 import crypto from 'node:crypto';
 
 // Prevent multiple instances of the app
@@ -26,36 +25,25 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 }
 //change these require statments to import statements
-//const fs = require('fs');
 import fs from 'node:fs';
-//const xml2js = require('xml2js');
 import xml2js from 'xml2js';
-//const fetch = require('electron-fetch').default;
 import fetch from 'electron-fetch';
-//const { autoUpdater } = require('electron-updater');
-//import { autoUpdater } from 'electron-updater';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
-//const unhandled = require('electron-unhandled');
 import unhandled from 'electron-unhandled';
-//const debug = require('electron-debug');
 import debug from 'electron-debug';
-//const contextMenu = require('electron-context-menu');
 import contextMenu from 'electron-context-menu';
-//const config = require('./js/config');
 import config from './js/config.js';
-//const DataStore = require('./js/datastore');import DataStore from './js/datastore';
 import DataStore from './js/datastore.js';
-//const Store = require('electron-store');
 import Store from 'electron-store';
 const store = new Store();
-//const rsslib = require('./js/rsslib');
 import rsslib from './js/rsslib.js';
 
 //configure logging
 //macOS path ~/Library/Logs/{app name}/{process type}.log
-//const log = require('electron-log');
 import log from 'electron-log';
+
+const isMac = process.platform === 'darwin';
 
 let logfilePath = log.transports.file.getFile().path;
 let logDirectory = path.dirname(logfilePath);
@@ -85,7 +73,7 @@ log.errorHandler.startCatching({
         if (result.response === 1) {
           submitIssue('https://github.com/dotnaught/rssputin/issues/new', {
             title: `Error report for ${versions.app}`,
-            body: 'Error:\n```' + error.stack + '\n```\n' + `OS: ${versions.os}`,
+            body: `Error:\n${error.stack}\nOS:\n${versions.os}`,
           });
           return;
         }
@@ -207,6 +195,7 @@ const rssdb = JSON.parse(resp);
 
 //const Ajv = require('ajv');
 import Ajv from 'ajv';
+import process from 'node:process';
 const ajv = new Ajv();
 //console.log(rssdb);
 const validate = ajv.compile(schema);
@@ -311,8 +300,9 @@ const createFeedWindow = async () => {
       nodeIntegration: false, // Is default value after Electron v5
       contextIsolation: true, // Protect against prototype pollution
       enableRemoteModule: false, // Turn off remote
+      nodeIntegrationInWorker: true,
       worldSafeExecuteJavaScript: true, // Sanitize JavaScript
-      preload: path.join(__dirname, '/js', 'preload.mjs'), // Use a preload script
+      preload: path.join(__dirname, '/js/preload.mjs'), // Use a preload script
       nativeWindowOpen: true,
     },
   });
@@ -349,7 +339,7 @@ app.on('second-instance', () => {
 });
 
 app.on('window-all-closed', () => {
-  if (!is.macos) {
+  if (!isMac) {
     app.quit();
   }
 });
@@ -603,100 +593,10 @@ function importDB() {
       log.error('Import error: ', err);
     });
 }
-
-const helpSubmenu = [
-  openUrlMenuItem({
-    label: 'Website',
-    url: 'https://github.com/Dotnaught/rssputin',
-  }),
-  openUrlMenuItem({
-    label: 'Source Code',
-    url: 'https://github.com/Dotnaught/rssputin',
-  }),
-  {
-    label: 'Report an Issue…',
-    click() {
-      const body = `
-<!-- Please succinctly describe your issue and steps to reproduce it. -->
-
-
----
-
-${debugInfo()}`;
-
-      openNewGitHubIssue({
-        user: 'dotnaught',
-        repo: 'rssputin',
-        body,
-      });
-    },
-  },
-];
-
-if (!is.macos) {
-  helpSubmenu.push(
-    {
-      type: 'separator',
-    },
-    aboutMenuItem({
-      icon: path.join(__dirname, 'static', 'icon.png'),
-      text: 'Created by Lot 49 Labs',
-    })
-  );
-}
-
-const debugSubmenu = [
-  {
-    label: 'Show Settings',
-    click() {
-      shell.openPath(configFile);
-    },
-  },
-  {
-    label: 'Show App Data',
-    click() {
-      shell.openPath(userData);
-    },
-  },
-  {
-    label: 'Show Log Data',
-    click() {
-      shell.openPath(logfilePath);
-    },
-  },
-  {
-    type: 'separator',
-  },
-  {
-    label: 'Delete Settings',
-    click() {
-      config.clear();
-      app.relaunch();
-      app.quit();
-    },
-  },
-  {
-    label: 'Delete App Data',
-    click() {
-      shell.trashItem(app.getPath('userData'));
-      app.relaunch();
-      app.quit();
-    },
-  },
-];
-/*appMenu([
-    {
-      label: 'Preferences…',
-      accelerator: 'Command+,',
-      click() {
-        showPreferences();
-      },
-    },
-  ])
-  */
-const macosTemplate = [
+/*
+const template = [
   // { role: 'appMenu' }
-  ...(is.macos
+  ...(isMac
     ? [
         {
           label: app.name,
@@ -716,7 +616,7 @@ const macosTemplate = [
     : []),
   // { role: 'fileMenu' }
   {
-    role: 'fileMenu',
+    label: 'File',
     submenu: [
       {
         label: 'Show Feeds',
@@ -779,109 +679,116 @@ const macosTemplate = [
       },
     ],
   },
+  // { role: 'editMenu' }
   {
-    role: 'editMenu',
+    label: 'Edit',
+    submenu: [
+      { role: 'undo' },
+      { role: 'redo' },
+      { type: 'separator' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+      ...(isMac
+        ? [
+            { role: 'pasteAndMatchStyle' },
+            { role: 'delete' },
+            { role: 'selectAll' },
+            { type: 'separator' },
+            {
+              label: 'Speech',
+              submenu: [{ role: 'startSpeaking' }, { role: 'stopSpeaking' }],
+            },
+          ]
+        : [{ role: 'delete' }, { type: 'separator' }, { role: 'selectAll' }]),
+    ],
   },
+  // { role: 'viewMenu' }
   {
-    role: 'viewMenu',
-  },
-
-  {
-    role: 'windowMenu',
-  },
-  {
-    role: 'help',
-    submenu: helpSubmenu,
-  },
-];
-
-// Linux and Windows
-const otherTemplate = [
-  {
-    role: 'fileMenu',
+    label: 'View',
     submenu: [
       {
-        label: 'Show Feeds',
-        accelerator: 'CmdOrCtrl+F',
-        async click() {
-          if (mainWindow) {
-            createFeedWindow();
-          }
+        label: 'Show Settings',
+        click() {
+          shell.openPath(configFile);
+        },
+      },
+      {
+        label: 'Show App Data',
+        click() {
+          shell.openPath(userData);
+        },
+      },
+      {
+        label: 'Show Log Data',
+        click() {
+          shell.openPath(logfilePath);
         },
       },
       {
         type: 'separator',
       },
       {
-        label: 'Import Database',
-        accelerator: 'CmdOrCtrl+=',
-        async click() {
-          if (mainWindow) {
-            importDB();
-          }
+        label: 'Delete Settings',
+        click() {
+          config.clear();
+          app.relaunch();
+          app.quit();
         },
       },
       {
-        label: 'Export Database',
-        accelerator: 'CmdOrCtrl+B',
-        async click() {
-          if (mainWindow) {
-            exportDB();
-          }
+        label: 'Delete App Data',
+        click() {
+          shell.trashItem(app.getPath('userData'));
+          app.relaunch();
+          app.quit();
         },
       },
-      {
-        type: 'separator',
-      },
-      {
-        type: 'separator',
-      },
-      {
-        label: 'Open Main Window',
-        accelerator: 'CmdOrCtrl+D',
-        enabled: false,
-        id: 'mainWindow',
-        async click() {
-          setMainWindow();
-        },
-      },
-      {
-        label: 'Reset Column Widths',
-        async click() {
-          if (mainWindow) {
-            resetColumnWidths();
-          }
-        },
-      },
-      {
-        type: 'separator',
-      },
-      {
-        role: 'close',
-      },
+      { type: 'separator' },
+      { role: 'reload' },
+      { role: 'forceReload' },
+      { role: 'toggleDevTools' },
+      { type: 'separator' },
+      { role: 'resetZoom' },
+      { role: 'zoomIn' },
+      { role: 'zoomOut' },
+      { type: 'separator' },
+      { role: 'togglefullscreen' },
+    ],
+  },
+  // { role: 'windowMenu' }
+  {
+    label: 'Window',
+    submenu: [
+      { role: 'minimize' },
+      { role: 'zoom' },
+      ...(isMac
+        ? [{ type: 'separator' }, { role: 'front' }, { type: 'separator' }, { role: 'window' }]
+        : [{ role: 'close' }]),
     ],
   },
   {
-    role: 'editMenu',
-  },
-  {
-    role: 'viewMenu',
-  },
-  {
     role: 'help',
-    submenu: helpSubmenu,
+    submenu: [
+      {
+        label: 'Learn More',
+        click: async () => {
+          await shell.openExternal('https://electronjs.org');
+        },
+      },
+    ],
   },
 ];
-
-const template = process.platform === 'darwin' ? macosTemplate : otherTemplate;
-
-if (is.development) {
+/*
+if (!electron.app.isPackaged) {
   template.push({
     label: 'Debug',
     submenu: debugSubmenu,
   });
 }
-/// menu.js
+*/
+
+import template from './js/menu.js';
 
 const setMainWindow = async () => {
   await app.whenReady().then(async () => {
@@ -933,3 +840,16 @@ const setMainWindow = async () => {
 };
 
 setMainWindow();
+
+export {
+  mainWindow,
+  createFeedWindow,
+  importDB,
+  exportDB,
+  setMainWindow,
+  resetColumnWidths,
+  userData,
+  configFile,
+  logfilePath,
+  config,
+};
