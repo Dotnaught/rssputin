@@ -7,15 +7,16 @@ let parser = new Parser({
     feed: [['dc:date', 'isoDate']],
     item: [['dc:creator', 'creator']],
   },
-  timeout: 10000,
+  timeout: 50000,
 });
 
 import { formatDistance, differenceInHours } from 'date-fns';
+import { statusCodes } from './statusCodes.js';
 
 const getAllFeeds = async (urlList, feedMode, win) => {
-  console.assert(urlList.length > 0, 'urlList is empty');
-  console.assert(feedMode !== undefined, 'feedmode is underfined');
-  console.assert(win !== undefined, 'win is underfined');
+  //console.assert(urlList.length > 0, 'urlList is empty');
+  //console.assert(feedMode !== undefined, 'feedmode is underfined');
+  //console.assert(win !== undefined, 'win is underfined');
   let errors = [];
   const promises = urlList.map(async (entry) => {
     if (
@@ -34,7 +35,7 @@ const getAllFeeds = async (urlList, feedMode, win) => {
         //   parser.options.requestOptions = {};
         // }
         parser.options.requestOptions = {};
-        console.log(`Fetching ${entry.feed}`);
+        //console.log(`Fetching ${entry.feed}`);
         const rssResult = await parser.parseURL(entry.feed);
 
         const combinedResults = {
@@ -42,15 +43,24 @@ const getAllFeeds = async (urlList, feedMode, win) => {
           meta: entry,
           errors: errors,
         };
-        console.assert(combinedResults.res !== undefined, 'res is underfined');
-        console.assert(combinedResults.meta !== undefined, 'meta is underfined');
+        //console.assert(combinedResults.res !== undefined, 'res is underfined');
+        //console.assert(combinedResults.meta !== undefined, 'meta is underfined');
         //console.log(combinedResults);
         return combinedResults;
       } catch (e) {
         console.log(`Error at ${entry.feed}`);
         console.error(`${e.name}: ${e.message}`);
+        //if message is in statusCodes, append the status code
+        if (statusCodes[e.message] !== undefined) {
+          e.message = e.message + ': ' + statusCodes[e.message];
+        }
         //push error to array
-        errors.push({ feed: entry.feed, error: e.message });
+        errors.push({
+          title: e.message,
+          hoursAgo: new Date().getTime(),
+          author: 'Error',
+          sourceLink: entry.feed,
+        });
       }
     }
   });
@@ -135,7 +145,9 @@ function removeXMLInvalidChars(str, removeDiscouragedChars) {
 }
 
 function processFeeds(feeds, timeWindow, feedMode) {
-  if (feeds[0] === undefined) feeds.shift();
+  //if (feeds[0] === undefined) feeds.shift();
+  //remove undefined feeds
+  feeds = feeds.filter((feed) => feed !== undefined);
 
   let arr = [];
 
@@ -156,25 +168,22 @@ function processFeeds(feeds, timeWindow, feedMode) {
       return url;
     }
   };
+  //get last item in feeds
 
-  feeds.forEach((feed) => {
+  feeds.forEach((feed, index, array) => {
     if (feed === undefined) {
       return;
-    } else if (feedMode === 'publication' && feed.meta.mode !== 'publication') {
-      return;
-    } else if (feedMode === 'aggregator' && feed.meta.mode !== 'aggregator') {
-      return;
-    } else if (feedMode === 'docket' && feed.meta.mode !== 'docket') {
-      return;
-    } else if (feedMode === 'atemporal' && feed.meta.mode !== 'atemporal') {
+    } else if (feedMode !== feed.meta.mode) {
       return;
     }
+    //console.log(feed.errors);
     //filter for articles with words in list
     let filterList = feed.meta.filterList;
-    console.log(`Processing ${feed.res.title}`);
-    console.log(Object.keys(feed.res));
-    console.log('Done processing feed');
+    //console.log(`Processing ${feed.res.title}`);
+    //console.log(Object.keys(feed.res));
+    //console.log('Items:');
     feed.res.items.forEach((i) => {
+      //console.log(Object.keys(i));
       //print item to console
       let altURLs = undefined;
       let altLink = undefined;
@@ -214,7 +223,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
             aggIndex = 1;
         }
         altLink = feed.meta.mode === 'aggregator' ? altURLs[linkIndex] : i.link;
-        console.assert(altLink !== undefined, 'altLink is underfined');
+        //console.assert(altLink !== undefined, 'altLink is underfined');
         aggregatorLink = altURLs[aggIndex];
       }
       //create the feed object to be displayed
@@ -287,7 +296,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
       obj.sourceLink = getOrigin(sourceURL);
       obj.aggregatorLink = aggregatorLink;
       obj.feedTitle = feed.res.title;
-      console.assert(obj.feedTitle !== undefined, 'obj.feedTitle is underfined');
+      //console.assert(obj.feedTitle !== undefined, 'obj.feedTitle is underfined');
       //testing
       removeXMLInvalidChars(obj.title, true);
       obj.color = feed.meta.color;
@@ -307,12 +316,32 @@ function processFeeds(feeds, timeWindow, feedMode) {
         arr.push(obj);
       } //otherwise, don't show
     });
+    //add errors to feed
+    //console.log('index', index, 'array length', array.length - 1);
+    if (Object.is(array.length - 1, index) && feed.errors.length > 0) {
+      //console.log('Adding errors to feed');
+      for (let i = 0; i < feed.errors.length; i++) {
+        let obj = {};
+        obj.title = feed.errors[i].title;
+        obj.link = feed.errors[i].sourceLink;
+        obj.urlHash = crypto.createHash('sha1').update(obj.link).digest('hex');
+        obj.sourceDisplayText = getHostname(obj.link);
+        obj.sourceLink = getOrigin(obj.link);
+        obj.feedTitle = feed.res.title;
+        obj.color = '#ff0000';
+        obj.published = feed.errors[i].hoursAgo;
+        obj.pubtype = feed.meta.mode;
+        obj.author = feed.errors[i].author;
+        obj.hoursAgo = 'Now';
+        arr.push(obj);
+      }
+    }
   });
 
   arr.sort(function (a, b) {
     return b.published - a.published;
   });
-  console.log('Finished processing feeds');
+  //console.log('Finished processing feeds');
   return arr;
 }
 

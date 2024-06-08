@@ -191,9 +191,6 @@ const template = [
       {
         label: 'Learn More',
         click: async () => {
-          const { shell } = require('electron');
-          //convert line above to ESM
-
           await shell.openExternal('https://electronjs.org');
         },
       },
