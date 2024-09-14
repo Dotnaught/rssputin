@@ -288,6 +288,11 @@ function resizableGrid(table) {
       let cols = ['hoursAgo', 'Title', 'Author', 'Source'];
       let tgt = e.target.parentElement?.id || 'None';
       if (!cols.includes(tgt)) {
+        curCol = undefined;
+        nxtCol = undefined;
+        pageX = undefined;
+        nxtColWidth = undefined;
+        curColWidth = undefined;
         return;
       }
       curCol = e.target.parentElement;

@@ -3,6 +3,9 @@ import crypto from 'node:crypto';
 
 import Parser from 'rss-parser';
 let parser = new Parser({
+  headers: {
+    'User-Agent': 'Company admin@example.com',
+  },
   customFields: {
     feed: [['dc:date', 'isoDate']],
     item: [['dc:creator', 'creator']],
@@ -171,19 +174,17 @@ function processFeeds(feeds, timeWindow, feedMode) {
   //get last item in feeds
 
   feeds.forEach((feed, index, array) => {
-    if (feed === undefined) {
+    if (feed === undefined || feedMode !== feed.meta.mode) {
       return;
-    } else if (feedMode !== feed.meta.mode) {
-      return;
-    }
+    } //skip undefined feeds
     //console.log(feed.errors);
     //filter for articles with words in list
     let filterList = feed.meta.filterList;
-    //console.log(`Processing ${feed.res.title}`);
-    //console.log(Object.keys(feed.res));
-    //console.log('Items:');
+    console.log(`Processing ${feed.res.title}`);
+    console.log(Object.keys(feed.res));
+    console.log('Items:');
     feed.res.items.forEach((i) => {
-      //console.log(Object.keys(i));
+      console.log(Object.keys(i));
       //print item to console
       let altURLs = undefined;
       let altLink = undefined;
@@ -199,7 +200,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
             )
           ),
         ];
-        //console.log(altURLs + ' ' + feed.res.title);
+        console.log(altURLs + ' ' + feed.res.title);
 
         switch (feed.res.title) {
           case 'Hacker News':
@@ -223,7 +224,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
             aggIndex = 1;
         }
         altLink = feed.meta.mode === 'aggregator' ? altURLs[linkIndex] : i.link;
-        //console.assert(altLink !== undefined, 'altLink is underfined');
+        console.assert(altLink !== undefined, 'altLink is underfined');
         aggregatorLink = altURLs[aggIndex];
       }
       //create the feed object to be displayed
@@ -258,7 +259,18 @@ function processFeeds(feeds, timeWindow, feedMode) {
           .replace(/\\'/g, '');
       } else if (feed.meta.mode === 'docket') {
         //add type of court filing to unused author column
-        obj.author = i.content.substring(1, i.content.indexOf(']'));
+        if (i.categories !== undefined) {
+          //supreme court
+          obj.author = i.categories[0];
+        } else if (feed.res.title === 'United States Courts for the Ninth Circuit - Opinions') {
+          //9th circuit
+          obj.author = '9th Circuit';
+        } else {
+          //other cases
+          //console.log(Object.keys(feed.res));
+          obj.author = i.content.substring(1, i.content.indexOf(']'));
+          console.log('obj.author', obj.author);
+        }
       } else {
         obj.author = '';
       }
