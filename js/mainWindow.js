@@ -203,7 +203,10 @@ function generateTable(table, data) {
         let text = document.createTextNode(cleanedText);
         const a = document.createElement('a');
 
-        a.setAttribute('href', element.link); //'#'
+        //no link for out of range feeds
+        if (element.color != '#cccccc') {
+          a.setAttribute('href', element.link); //'#'
+        }
         //a.setAttribute('id', element.link);
         a.setAttribute('id', element.urlHash);
         if (element.title.length > 159) {
@@ -220,7 +223,10 @@ function generateTable(table, data) {
         let text = document.createTextNode(cleanedText);
         const a = document.createElement('a');
         let link = element.aggregatorLink ? element.aggregatorLink : element.sourceLink;
-        a.setAttribute('href', link);
+        //no link for out of range feeds
+        if (element.color != '#cccccc') {
+          a.setAttribute('href', link);
+        }
 
         a.setAttribute('id', row.rowIndex);
         a.style.color = element.color;

@@ -12,6 +12,8 @@ Version 1.0.5 adds support for handling RSS feeds from US courts. When entering 
 
 Version 1.0.7 includes various changes. There's now a dropdown menu for choosing what gets displayed, based on tags assigned when entering a feed in the Feed Window. Choices include: "publication", "aggregator", "docket", and "atemporal". "publication" includes both "publication" and "aggregator" feeds (because the "aggregator" tag is more about which links get pulled from the RSS feed). "docket" is intended for court feeds. "atemporal" is for ArXiv and other sources that publish multiple items at the same time, so they can't be sorted by recency. There's also a logging service that's partly implemented, for diagnosing auto-update errors and the like. And feeds that have been misidentified as arriving at a future date have been moved to the end of the display window.
 
+Recent updates add feed network error messages at the top of display list and notifications that feeds have no valid items at the bottom. Handling of aggregator links has also been improved.
+
 <img src="https://github.com/Dotnaught/rssputin/blob/main/assets/rssputin_screenshot.png" width="800" />
 
 ### Prerequisites
@@ -52,7 +54,7 @@ To build RSSputin as a desktop app, run the script for the appropriate platform 
 
 ## Authors
 
-* **Thomas Claburn** - *Version 1.0.12* - [Dotnaught](https://github.com/Dotnaught)
+* **Thomas Claburn** - *Version 1.1.1* - [Dotnaught](https://github.com/Dotnaught)
 
 ## License
 

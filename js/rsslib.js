@@ -3,14 +3,16 @@ import crypto from 'node:crypto';
 
 import Parser from 'rss-parser';
 let parser = new Parser({
+  /* required for SEC feeds
   headers: {
     'User-Agent': 'Company admin@example.com',
   },
+  */
   customFields: {
     feed: [['dc:date', 'isoDate']],
     item: [['dc:creator', 'creator']],
   },
-  timeout: 50000,
+  //timeout: 50000,
 });
 
 import { formatDistance, differenceInHours } from 'date-fns';
@@ -140,7 +142,7 @@ function removeXMLInvalidChars(str, removeDiscouragedChars) {
     let nln = str.length;
 
     if (ln != nln) {
-      console.log('removed characters');
+      console.log(`removed ${ln - nln} characters`);
     }
   }
 
@@ -153,11 +155,13 @@ function processFeeds(feeds, timeWindow, feedMode) {
   feeds = feeds.filter((feed) => feed !== undefined);
 
   let arr = [];
+  let setOfDisplayedFeeds = new Set();
+  let setOfPostWindowFeeds = new Set();
 
   const getHostname = (url) => {
     // use URL constructor and return hostname,  eg www.example.com
     if (url != undefined) {
-      return new URL(url).hostname;
+      return new URL(url).hostname.toLowerCase();
     } else {
       return url;
     }
@@ -171,7 +175,21 @@ function processFeeds(feeds, timeWindow, feedMode) {
       return url;
     }
   };
-  //get last item in feeds
+  const findRedditLink = (strings, exclusionList) => {
+    // Convert exclusion list to lowercase for case-insensitive comparison
+    const lowercaseExclusions = exclusionList.map((item) => item.toLowerCase());
+
+    // Function to check if a string contains any excluded substrings
+    const isExcluded = (str) => {
+      const lowercaseStr = str.toLowerCase();
+      return lowercaseExclusions.some((excluded) => lowercaseStr.includes(excluded));
+    };
+
+    // Find the first non-excluded string
+    return (
+      strings.find((str) => !isExcluded(str)) || strings.find((url) => url.includes('comments'))
+    );
+  };
 
   feeds.forEach((feed, index, array) => {
     if (feed === undefined || feedMode !== feed.meta.mode) {
@@ -180,18 +198,20 @@ function processFeeds(feeds, timeWindow, feedMode) {
     //console.log(feed.errors);
     //filter for articles with words in list
     let filterList = feed.meta.filterList;
-    console.log(`Processing ${feed.res.title}`);
-    console.log(Object.keys(feed.res));
-    console.log('Items:');
+
+    //console.log(`Processing ${feed.res.title}`);
+    //console.log(Object.keys(feed.res));
+    //console.log('Items:');
     feed.res.items.forEach((i) => {
-      console.log(Object.keys(i));
       //print item to console
       let altURLs = undefined;
       let altLink = undefined;
       let aggregatorLink = undefined;
+
       if (i.content && feed.meta.mode === 'aggregator') {
         let linkIndex;
         let aggIndex;
+        let redIndex;
         altURLs = [
           ...new Set(
             i.content.match(
@@ -200,16 +220,28 @@ function processFeeds(feeds, timeWindow, feedMode) {
             )
           ),
         ];
-        console.log(altURLs + ' ' + feed.res.title);
 
+        //create a more general test for reddit custom feeds
+        //https://support.reddithelp.com/hc/en-us/articles/360043043412-What-is-a-custom-feed-and-how-do-I-make-one
+        if (
+          feed.res.title === 'enterprise_tech subreddits curated by /u/diodesign' ||
+          feed.res.title === 'newest submissions : technology'
+        ) {
+          const exclusionList = ['reddit.com', 'redd.it'];
+          let redURL = findRedditLink(altURLs, exclusionList);
+          //console.log('redURL', redURL);
+          redIndex = altURLs.findIndex((url) => url === redURL) || 0;
+          //console.log('redIndex', redIndex);
+        }
         switch (feed.res.title) {
           case 'Hacker News':
             linkIndex = 0; //not used
             aggIndex = 0;
             break;
           case 'newest submissions : technology':
-            linkIndex = 3;
-            aggIndex = 0;
+            linkIndex = redIndex;
+            aggIndex = altURLs.length - 1;
+            console.log(altURLs);
             break;
           case 'Techmeme':
             linkIndex = 0;
@@ -219,13 +251,21 @@ function processFeeds(feeds, timeWindow, feedMode) {
             linkIndex = 0;
             aggIndex = altURLs.length - 1;
             break;
+          case 'enterprise_tech subreddits curated by /u/diodesign':
+            linkIndex = redIndex; //or 0 for internal Reddit references
+            aggIndex = altURLs.length - 1;
+            console.log(altURLs);
+            break;
           default:
             linkIndex = 0;
             aggIndex = 1;
         }
-        altLink = feed.meta.mode === 'aggregator' ? altURLs[linkIndex] : i.link;
-        console.assert(altLink !== undefined, 'altLink is underfined');
-        aggregatorLink = altURLs[aggIndex];
+        altLink =
+          feed.meta.mode === 'aggregator' && feed.res.title !== 'Lobsters'
+            ? altURLs[linkIndex]
+            : i.link; //use i.link for Lobsters
+        console.assert(altLink !== undefined, 'altLink is underfined', altURLs[linkIndex], i.link);
+        aggregatorLink = feed.res.title !== 'Lobsters' ? altURLs[aggIndex] : i.comments;
       }
       //create the feed object to be displayed
 
@@ -269,7 +309,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
           //other cases
           //console.log(Object.keys(feed.res));
           obj.author = i.content.substring(1, i.content.indexOf(']'));
-          console.log('obj.author', obj.author);
+          //console.log('obj.author', obj.author);
         }
       } else {
         obj.author = '';
@@ -326,26 +366,55 @@ function processFeeds(feeds, timeWindow, feedMode) {
 
       if (result < feedDisplayTimeWindow && check) {
         arr.push(obj);
-      } //otherwise, don't show
-    });
+        setOfDisplayedFeeds.add(obj.feedTitle);
+      } else {
+        //populate array of items that were filtered out
+        setOfPostWindowFeeds.add(obj.feedTitle);
+      }
+    }); //end of feed.res.items.forEach
     //add errors to feed
     //console.log('index', index, 'array length', array.length - 1);
-    if (Object.is(array.length - 1, index) && feed.errors.length > 0) {
+    if (Object.is(array.length - 1, index)) {
       //console.log('Adding errors to feed');
-      for (let i = 0; i < feed.errors.length; i++) {
-        let obj = {};
-        obj.title = feed.errors[i].title;
-        obj.link = feed.errors[i].sourceLink;
-        obj.urlHash = crypto.createHash('sha1').update(obj.link).digest('hex');
-        obj.sourceDisplayText = getHostname(obj.link);
-        obj.sourceLink = getOrigin(obj.link);
-        obj.feedTitle = feed.res.title;
-        obj.color = '#ff0000';
-        obj.published = feed.errors[i].hoursAgo;
-        obj.pubtype = feed.meta.mode;
-        obj.author = feed.errors[i].author;
-        obj.hoursAgo = 'Now';
-        arr.push(obj);
+      if (feed.errors.length > 0) {
+        for (let i = 0; i < feed.errors.length; i++) {
+          let obj = {};
+          obj.title = feed.errors[i].title;
+          obj.link = feed.errors[i].sourceLink;
+          obj.urlHash = crypto.createHash('sha1').update(obj.link).digest('hex');
+          obj.sourceDisplayText = getHostname(obj.link);
+          obj.sourceLink = getOrigin(obj.link);
+          obj.feedTitle = feed.res.title;
+          obj.color = '#ff0000';
+          obj.published = feed.errors[i].hoursAgo;
+          obj.pubtype = feed.meta.mode;
+          obj.author = feed.errors[i].author;
+          obj.hoursAgo = 'Now';
+          arr.push(obj);
+        }
+      }
+      //add array of titles outside time window
+
+      let diff = new Set([...setOfPostWindowFeeds].filter((x) => !setOfDisplayedFeeds.has(x)));
+      let difflist = [...diff]; //convert to array
+      if (difflist.length > 0) {
+        let feedDisplayTimeWindow = timeWindow || 72;
+
+        for (let i = 0; i < difflist.length; i++) {
+          let obj = {};
+          obj.title = `No new items from ${difflist[i]} in the last ${feedDisplayTimeWindow} hours`;
+          obj.link = '';
+          obj.urlHash = crypto.createHash('sha1').update(difflist[i]).digest('hex');
+          obj.sourceDisplayText = difflist[i];
+          obj.sourceLink = '';
+          obj.feedTitle = difflist[i];
+          obj.color = '#cccccc';
+          obj.published = Date.now() - 3600000 * feedDisplayTimeWindow;
+          obj.pubtype = feed.meta.mode;
+          obj.author = '';
+          obj.hoursAgo = '-';
+          arr.push(obj);
+        }
       }
     }
   });
