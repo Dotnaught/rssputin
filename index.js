@@ -60,8 +60,11 @@ log.error("An error");
 
 log.errorHandler.startCatching({
   showDialog: true,
-  onError(error, versions, submitIssue) {
-    dialog
+  onError({ createIssue, error, processType, versions }) {
+    if (processType === 'renderer') {
+      return;
+    }
+    electron.dialog
       .showMessageBox({
         title: 'An error occurred',
         message: error.message,
@@ -71,15 +74,15 @@ log.errorHandler.startCatching({
       })
       .then((result) => {
         if (result.response === 1) {
-          submitIssue('https://github.com/dotnaught/rssputin/issues/new', {
+          createIssue('https://github.com/dotnaught/rssputin/issues/new', {
             title: `Error report for ${versions.app}`,
-            body: `Error:\n${error.stack}\nOS:\n${versions.os}`,
+            body: 'Error:\n```' + error.stack + '\n```\n' + `OS: ${versions.os}`,
           });
           return;
         }
 
         if (result.response === 2) {
-          app.quit();
+          electron.app.quit();
         }
       });
   },
@@ -390,6 +393,13 @@ ipcMain.on('setFeedMode', (event, args) => {
   setMainWindow();
 });
 
+ipcMain.on('setDocketFilter', (event, args) => {
+  console.log('setDocketFilter', args);
+  store.set('docketFilter', args);
+  mainWindow.close();
+  setMainWindow();
+});
+
 ipcMain.on('setTimeWindow', (event, args) => {
   store.set('timeWindow', args);
   if (mainWindow) {
@@ -479,6 +489,8 @@ function setDefaults() {
   store.set('Source', Source);
   let feedMode = store.get('feedMode') || 'publication';
   store.set('feedMode', feedMode);
+  let docketFilter = store.get('docketFilter') || 'complaint';
+  store.set('docketFilter', docketFilter);
 }
 
 function resetColumnWidths() {
@@ -621,6 +633,7 @@ const setMainWindow = async () => {
     setDefaults();
     let timeWindow = store.get('timeWindow');
     let feedMode = store.get('feedMode');
+    let docketFilter = store.get('docketFilter');
 
     // Create the mainWindow
     mainWindow = await createMainWindow();
@@ -629,6 +642,7 @@ const setMainWindow = async () => {
     let defaultsObj = {
       timeWindow: timeWindow,
       feedMode: feedMode,
+      docketFilter: docketFilter,
       hoursAgo: store.get('hours'),
       Title: store.get('Title'),
       Author: store.get('Author'),
@@ -638,8 +652,8 @@ const setMainWindow = async () => {
     mainWindow.webContents.send('receiveDefaults', defaultsObj);
     // Fetch and process RSS feeds
     rsslib
-      .getAllFeeds(feedData.getFeeds(), feedMode, mainWindow)
-      .then((feeds) => rsslib.processFeeds(feeds, timeWindow, feedMode))
+      .getAllFeeds(feedData.getFeeds(), defaultsObj, mainWindow)
+      .then((feeds) => rsslib.processFeeds(feeds, timeWindow, defaultsObj))
       .then((result) => mainWindow.webContents.send('fromMain', result))
       .catch((error) => console.error(error.message));
   });

@@ -1,5 +1,6 @@
 let table = document.querySelector('table');
 let dropdown = document.getElementById('dropdown');
+let ditems = document.getElementById('ditems');
 
 window.api.receive('updateBar', (args) => {
   let bar = document.getElementById('bar');
@@ -17,12 +18,18 @@ let defaultsObj;
 window.api.receive('receiveDefaults', (defaults) => {
   defaultsObj = defaults;
   dropdown.value = defaultsObj.feedMode;
-  //dropdown.options[dropdown.selectedIndex].selected = true;
-  //if (defaultsObj.feedMode) {
-  // dropdown.options[dropdown.selectedIndex].selected = true;
-  //} else {
-  //checkbox.removeAttribute('checked');
-  // }
+
+  ditems.style.visibility = defaultsObj.feedMode !== 'docket' ? 'hidden' : '';
+  //convert ditems.value to array
+  if (ditems.style.visibility !== 'hidden') {
+    let arr = defaultsObj.docketFilter.toLowerCase().split(' ');
+    console.log('array', arr);
+    Array.from(ditems.options).forEach((option) => {
+      // Check if the option value matches any word in the array
+      //console.log('option', option.value, option.selected);
+      option.selected = arr.includes(option.value.toLowerCase()) ? true : false;
+    });
+  }
 });
 
 window.api.receive('updateLinks', (links) => {
@@ -67,7 +74,17 @@ window.addEventListener('DOMContentLoaded', () => {
   //clear.style.opacity = 0.5;
 
   dropdown.addEventListener('change', filterDocket);
+  ditems.addEventListener('change', changeDocketFilter);
 });
+
+function changeDocketFilter(event) {
+  //ditems.value = event.target.value;
+  defaultsObj.docketFilter = event.target.value;
+  let arr = Array.from(ditems.selectedOptions).map((option) => option.value);
+  defaultsObj.docketFilter = arr.join(' ');
+  console.log(defaultsObj.docketFilter);
+  window.api.send('setDocketFilter', defaultsObj.docketFilter);
+}
 
 function filterDocket(event) {
   //defaultsObj.feedMode = event.target.checked;

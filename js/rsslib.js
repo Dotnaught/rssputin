@@ -18,7 +18,7 @@ let parser = new Parser({
 import { formatDistance, differenceInHours } from 'date-fns';
 import { statusCodes } from './statusCodes.js';
 
-const getAllFeeds = async (urlList, feedMode, win) => {
+const getAllFeeds = async (urlList, defaultsObj, win) => {
   //console.assert(urlList.length > 0, 'urlList is empty');
   //console.assert(feedMode !== undefined, 'feedmode is underfined');
   //console.assert(win !== undefined, 'win is underfined');
@@ -29,7 +29,7 @@ const getAllFeeds = async (urlList, feedMode, win) => {
       entry.feed !== '' &&
       entry.feed !== 'Enter valid feed' &&
       entry.visible &&
-      entry.mode === feedMode
+      entry.mode === defaultsObj.feedMode
     ) {
       try {
         // if (entry.feed == 'https://ekaprdweb01.eurekalert.org/rss/technology_engineering.xml') {
@@ -149,7 +149,7 @@ function removeXMLInvalidChars(str, removeDiscouragedChars) {
   return str;
 }
 
-function processFeeds(feeds, timeWindow, feedMode) {
+function processFeeds(feeds, timeWindow, defaultsObj) {
   //if (feeds[0] === undefined) feeds.shift();
   //remove undefined feeds
   feeds = feeds.filter((feed) => feed !== undefined);
@@ -192,7 +192,7 @@ function processFeeds(feeds, timeWindow, feedMode) {
   };
 
   feeds.forEach((feed, index, array) => {
-    if (feed === undefined || feedMode !== feed.meta.mode) {
+    if (feed === undefined || defaultsObj.feedMode !== feed.meta.mode) {
       return;
     } //skip undefined feeds
     //console.log(feed.errors);
@@ -220,7 +220,8 @@ function processFeeds(feeds, timeWindow, feedMode) {
             )
           ),
         ];
-
+        altURLs = altURLs.filter((url) => url.startsWith('http'));
+        //console.log('altURLs', altURLs);
         //create a more general test for reddit custom feeds
         //https://support.reddithelp.com/hc/en-us/articles/360043043412-What-is-a-custom-feed-and-how-do-I-make-one
         if (
@@ -229,8 +230,8 @@ function processFeeds(feeds, timeWindow, feedMode) {
         ) {
           const exclusionList = ['reddit.com', 'redd.it'];
           let redURL = findRedditLink(altURLs, exclusionList);
-          //console.log('redURL', redURL);
-          redIndex = altURLs.findIndex((url) => url === redURL) || 0;
+          console.log('redURL', redURL);
+          redIndex = altURLs.findIndex((url) => url === redURL) || 0; //instead find comments
           //console.log('redIndex', redIndex);
         }
         switch (feed.res.title) {
@@ -338,7 +339,8 @@ function processFeeds(feeds, timeWindow, feedMode) {
 
       obj.link = altLink && feed.meta.mode === 'aggregator' ? altLink : i.link;
       if (obj.link === undefined) {
-        throw new Error('obj.link is underfined');
+        let report = JSON.stringify(i);
+        throw new Error(`obj.link is underfined ${report}`);
       }
       obj.urlHash = crypto.createHash('sha1').update(obj.link).digest('hex');
 
@@ -362,8 +364,16 @@ function processFeeds(feeds, timeWindow, feedMode) {
       }
 
       let filteredWords = stringToArray(filterList);
-      let check = checkFilter(filteredWords, obj.title) || checkFilter(filteredWords, obj.author);
-
+      let filteredAuthor =
+        feed.meta.mode === 'docket' ? stringToArray(defaultsObj.docketFilter) : stringToArray('');
+      console.log('docketFilter', defaultsObj.docketFilter);
+      if (defaultsObj.docketFilter.includes('any')) {
+        filteredAuthor = stringToArray('');
+      }
+      console.log(filteredWords, obj.author);
+      let check = checkFilter(filteredWords, obj.title) && checkFilter(filteredAuthor, obj.author);
+      //checkFilter should return true if passed empty array
+      console.log(filteredWords, obj.author);
       if (result < feedDisplayTimeWindow && check) {
         arr.push(obj);
         setOfDisplayedFeeds.add(obj.feedTitle);

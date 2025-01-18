@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld('api', {
       'requestFeeds',
       'setTimeWindow',
       'setFeedMode',
+      'setDocketFilter',
       'setFeedItem',
       'addFeeds',
       'deleteFeed',

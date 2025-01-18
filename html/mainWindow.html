@@ -62,13 +62,6 @@
          </div>
     
         <div id="queryAndButton" class="relative flex w-full flex-wrap items-stretch mb-3">
-          <!--
-          <span
-            class="z-10 h-full leading-snug font-normal absolute text-center text-gray-400 absolute bg-transparent rounded text-base items-center justify-center w-8 pl-3 py-3"
-          >
-            <i class="fas fa-lock"></i>
-          </span>
--->
           <input
             id="query"
             type="text"
@@ -82,23 +75,36 @@
           >
             Clear
           </button>
-          <!--
-            <div class="form-control">
-              <label class="inline-flex items-center mt-5 ml-8">
-                <input id="checkbox" type="checkbox" class="form-checkbox h-5 w-5 text-red-600" checked><span class="ml-2 text-gray-700">Docket View</span>
-            </label>
-              
-          </div>
-        -->
-        
+  
         </div>
-
-        <!--<input placeholder="Search" id="query" type="text" class="validate" /> -->
-
-        
-
-        <!--- <a id="clear" href="#">Clear</a>-->
+        <div class="mb-3 xl:w-96 px-3 py-3">
+          <select id="ditems" class="form-select appearance-none
+            block
+            w-full
+            px-3
+            py-1.5
+            text-base
+            font-normal
+            text-gray-700
+            bg-white bg-clip-padding bg-no-repeat
+            border border-solid border-gray-300
+            rounded
+            transition
+            ease-in-out
+            m-0
+            focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" aria-label="Default select example">
+            <option value="any">any</option>
+              <option selected value="complaint">complaint</option>
+              <option value="order">order</option>
+              <option value="motion">motion</option>
+              <option value="exhibit">exhibit</option>
+              
+          </select>
+        </div>
       </div>
+      
+      
+    
 
       <table>
         <!--
