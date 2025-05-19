@@ -651,11 +651,13 @@ const setMainWindow = async () => {
 
     mainWindow.webContents.send('receiveDefaults', defaultsObj);
     // Fetch and process RSS feeds
-    rsslib
+    //create an iterable from defaultsObj
+    rsslib.getAllFeedsIncremental(feedData.getFeeds(), defaultsObj, mainWindow);
+    /*rsslib
       .getAllFeeds(feedData.getFeeds(), defaultsObj, mainWindow)
       .then((feeds) => rsslib.processFeeds(feeds, timeWindow, defaultsObj))
       .then((result) => mainWindow.webContents.send('fromMain', result))
-      .catch((error) => console.error(error.message));
+      .catch((error) => console.error(error.message));*/
   });
 };
 

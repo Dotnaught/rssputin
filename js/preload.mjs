@@ -36,7 +36,14 @@ contextBridge.exposeInMainWorld('api', {
   },
   receive: (channel, func) => {
     //receive from main process
-    let validChannels = ['fromMain', 'updateBar', 'sendFeeds', 'receiveDefaults', 'updateLinks'];
+    let validChannels = [
+      'fromMain',
+      'updateBar',
+      'sendFeeds',
+      'receiveDefaults',
+      'updateLinks',
+      'incrementalFeed',
+    ];
     if (validChannels.includes(channel)) {
       // Deliberately strip event as it includes `sender`
       //ipcRenderer.on(channel, (event, ...args) => func(...args));

@@ -94,6 +94,35 @@ const getAllFeeds = async (urlList, defaultsObj, win) => {
   return progressPromise(promises, update).then((results) => results);
 };
 
+// In js/rsslib.js
+
+const getAllFeedsIncremental = async (urlList, defaultsObj, win) => {
+  let completed = 0;
+  for (const entry of urlList) {
+    if (entry.feed && entry.visible) {
+      try {
+        // Fetch and parse the feed
+        const rssResult = await parser.parseURL(entry.feed);
+        const combinedResults = {
+          res: rssResult,
+          meta: entry,
+          errors: [],
+        };
+        // Process just this feed
+        const processed = processFeeds([combinedResults], defaultsObj.timeWindow, defaultsObj);
+        // Incremental update: send just this feed’s items to the renderer
+        win.webContents.send('incrementalFeed', processed);
+      } catch (e) {
+        // Optionally: send error to renderer too
+        win.webContents.send('feedError', { feed: entry.feed, error: e.message });
+      }
+    }
+    completed++;
+    // Optionally: update progress bar
+    win.webContents.send('updateBar', [completed, urlList.length]);
+  }
+};
+
 function stringToArray(str) {
   return str.trim().split(' ');
 }
@@ -366,7 +395,7 @@ function processFeeds(feeds, timeWindow, defaultsObj) {
       let filteredWords = stringToArray(filterList);
       let filteredAuthor =
         feed.meta.mode === 'docket' ? stringToArray(defaultsObj.docketFilter) : stringToArray('');
-      console.log('docketFilter', defaultsObj.docketFilter);
+      //console.log('docketFilter', defaultsObj.docketFilter);
       if (defaultsObj.docketFilter.includes('any')) {
         filteredAuthor = stringToArray('');
       }
@@ -436,4 +465,4 @@ function processFeeds(feeds, timeWindow, defaultsObj) {
   return arr;
 }
 
-export default { getAllFeeds, processFeeds };
+export default { getAllFeeds, getAllFeedsIncremental, processFeeds };
