@@ -17,6 +17,7 @@ let parser = new Parser({
 
 import { formatDistance, differenceInHours } from 'date-fns';
 import { statusCodes } from './statusCodes.js';
+import { time } from 'node:console';
 
 const getAllFeeds = async (urlList, defaultsObj, win) => {
   //console.assert(urlList.length > 0, 'urlList is empty');
@@ -99,7 +100,7 @@ const getAllFeeds = async (urlList, defaultsObj, win) => {
 const getAllFeedsIncremental = async (urlList, defaultsObj, win) => {
   let completed = 0;
   for (const entry of urlList) {
-    if (entry.feed && entry.visible) {
+    if (entry.feed && entry.visible && entry.mode === defaultsObj.feedMode) {
       try {
         // Fetch and parse the feed
         const rssResult = await parser.parseURL(entry.feed);
@@ -181,7 +182,7 @@ function removeXMLInvalidChars(str, removeDiscouragedChars) {
 function processFeeds(feeds, timeWindow, defaultsObj) {
   //if (feeds[0] === undefined) feeds.shift();
   //remove undefined feeds
-  feeds = feeds.filter((feed) => feed !== undefined);
+  //timeWindow is being passed properly
 
   let arr = [];
   let setOfDisplayedFeeds = new Set();
@@ -259,7 +260,7 @@ function processFeeds(feeds, timeWindow, defaultsObj) {
         ) {
           const exclusionList = ['reddit.com', 'redd.it'];
           let redURL = findRedditLink(altURLs, exclusionList);
-          console.log('redURL', redURL);
+          //console.log('redURL', redURL);
           redIndex = altURLs.findIndex((url) => url === redURL) || 0; //instead find comments
           //console.log('redIndex', redIndex);
         }
@@ -271,7 +272,7 @@ function processFeeds(feeds, timeWindow, defaultsObj) {
           case 'newest submissions : technology':
             linkIndex = redIndex;
             aggIndex = altURLs.length - 1;
-            console.log(altURLs);
+            //console.log(altURLs);
             break;
           case 'Techmeme':
             linkIndex = 0;
@@ -284,7 +285,7 @@ function processFeeds(feeds, timeWindow, defaultsObj) {
           case 'enterprise_tech subreddits curated by /u/diodesign':
             linkIndex = redIndex; //or 0 for internal Reddit references
             aggIndex = altURLs.length - 1;
-            console.log(altURLs);
+            //console.log(altURLs);
             break;
           default:
             linkIndex = 0;
@@ -294,7 +295,7 @@ function processFeeds(feeds, timeWindow, defaultsObj) {
           feed.meta.mode === 'aggregator' && feed.res.title !== 'Lobsters'
             ? altURLs[linkIndex]
             : i.link; //use i.link for Lobsters
-        console.assert(altLink !== undefined, 'altLink is underfined', altURLs[linkIndex], i.link);
+        //console.assert(altLink !== undefined, 'altLink is underfined', altURLs[linkIndex], i.link);
         aggregatorLink = feed.res.title !== 'Lobsters' ? altURLs[aggIndex] : i.comments;
       }
       //create the feed object to be displayed
@@ -399,10 +400,10 @@ function processFeeds(feeds, timeWindow, defaultsObj) {
       if (defaultsObj.docketFilter.includes('any')) {
         filteredAuthor = stringToArray('');
       }
-      console.log(filteredWords, obj.author);
+      //console.log(filteredWords, obj.author);
       let check = checkFilter(filteredWords, obj.title) && checkFilter(filteredAuthor, obj.author);
       //checkFilter should return true if passed empty array
-      console.log(filteredWords, obj.author);
+      //console.log(filteredWords, obj.author);
       if (result < feedDisplayTimeWindow && check) {
         arr.push(obj);
         setOfDisplayedFeeds.add(obj.feedTitle);

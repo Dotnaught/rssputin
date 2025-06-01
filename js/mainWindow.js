@@ -16,7 +16,9 @@ window.api.receive('updateBar', (args) => {
 
 // This event listener receives incremental feed items.
 // It calls addFeedItemsToUI to process and display them.
+
 window.api.receive('incrementalFeed', (feedItems) => {
+  console.log('Received incremental feed items:', feedItems);
   // Append feedItems to the displayed list/table
   addFeedItemsToUI(feedItems);
 });
@@ -52,6 +54,14 @@ function generateTableHead(table) {
         // Check defaultsObj.timeWindow only if defaultsObj exists
         if (defaultsObj && val === defaultsObj.timeWindow) {
           opt.selected = true;
+          console.log(`Setting default time window to ${val} hours`);
+        } else {
+          opt.selected = false; // Ensure other options are not selected
+          console.log(
+            `DefaultsObj does not exist ${
+              defaultsObj === null
+            } or the selected value ${val} is different from ${defaultsObj?.timeWindow}`
+          );
         }
         dropdown.appendChild(opt);
       }
@@ -198,7 +208,15 @@ function addFeedItemsToUI(feedItems) {
 
 // On first load, create table head and perform initial setup
 document.addEventListener('DOMContentLoaded', () => {
-  const table = document.getElementById('feedTable');
+  //const table = document.getElementById('feedTable');
+});
+
+let defaultsObj;
+
+// This event listener receives default settings, including column widths and filter preferences.
+window.api.receive('receiveDefaults', (defaults) => {
+  defaultsObj = defaults;
+
   if (table) {
     // Generate the table head once on load
     // generateTableHead requires defaultsObj which might not be loaded yet.
@@ -235,13 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial renderTable might be needed if data is loaded *before* the first incrementalFeed,
   // but based on the structure, data seems to arrive *via* incrementalFeed.
   // Keeping the renderTable call commented out on load is consistent with incremental loading.
-});
-
-let defaultsObj;
-
-// This event listener receives default settings, including column widths and filter preferences.
-window.api.receive('receiveDefaults', (defaults) => {
-  defaultsObj = defaults;
 
   // Update dropdown and ditems based on defaults
   if (dropdown && defaultsObj?.feedMode) {

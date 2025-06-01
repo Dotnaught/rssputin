@@ -31,7 +31,7 @@
   "dependencies": {
     "ajv": "^8.17.1",
     "date-fns": "^4.1.0",
-    "electron-context-menu": "^4.0.5",
+    "electron-context-menu": "^4.1.0",
     "electron-debug": "^4.1.0",
     "electron-fetch": "^1.9.1",
     "electron-log": "^5.4.0",
@@ -40,16 +40,16 @@
     "electron-unhandled": "^5.0.0",
     "electron-updater": "^6.6.2",
     "electron-util": "^0.18.1",
-    "octokit": "^4.1.3",
+    "octokit": "^5.0.3",
     "rss-parser": "^3.13.0",
     "ssl-root-cas": "^1.3.1",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@electron/notarize": "^3.0.1",
-    "electron": "^36.2.1",
+    "electron": "^36.3.2",
     "electron-builder": "^v26.0.12",
-    "eslint": "^9.27.0"
+    "eslint": "^9.28.0"
   },
   "build": {
     "appId": "com.lot49.rssputin",

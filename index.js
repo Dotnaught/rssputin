@@ -104,7 +104,7 @@ function deleteOldLogs() {
         let now = new Date();
         let diff = now.getTime() - fileDate.getTime();
         let hours = diff / (1000 * 60 * 60);
-        console.log(`${file} is ${hours} hours old`);
+        //console.log(`${file} is ${hours} hours old`);
 
         if (stats.size > 1000000) {
           try {
@@ -277,6 +277,13 @@ const createMainWindow = async () => {
     win.show();
     const menuItem = menu.getMenuItemById('mainWindow');
     menuItem.enabled = false;
+    win.webContents.setWindowOpenHandler((details) => {
+      shell.openExternal(details.url); // Open URL in user's browser.
+      let hash = crypto.createHash('sha1').update(details.url).digest('hex');
+
+      win.webContents.send('updateLinks', hash);
+      return { action: 'deny' }; // Prevent the app from opening the URL.
+    });
   });
 
   win.on('closed', () => {
@@ -611,18 +618,6 @@ import template from './js/menu.js';
 const setMainWindow = async () => {
   await app.whenReady().then(async () => {
     // Function to open links in browser
-    const handleRedirect = (event) => {
-      //event.sender.getURL() refers to the current window file path
-      let url = event.url;
-      if (url !== mainWindow.webContents.getURL()) {
-        shell.openExternal(url);
-        let hash = crypto.createHash('sha1').update(url).digest('hex');
-
-        mainWindow.webContents.send('updateLinks', hash);
-
-        event.preventDefault();
-      }
-    };
 
     // Setup the menu
     menu = Menu.buildFromTemplate(template);
@@ -638,7 +633,6 @@ const setMainWindow = async () => {
     // Create the mainWindow
     mainWindow = await createMainWindow();
     // Intercept navigation event so the URL opens in the browser
-    mainWindow.webContents.on('will-navigate', handleRedirect);
     let defaultsObj = {
       timeWindow: timeWindow,
       feedMode: feedMode,
