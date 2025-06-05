@@ -99,25 +99,28 @@ const getAllFeeds = async (urlList, defaultsObj, win) => {
 
 const getAllFeedsIncremental = async (urlList, defaultsObj, win) => {
   let completed = 0;
+  //filter urlList for visible feeds with the correct mode
+  urlList = urlList.filter((entry) => {
+    return entry.feed && entry.visible && entry.mode === defaultsObj.feedMode;
+  });
   for (const entry of urlList) {
-    if (entry.feed && entry.visible && entry.mode === defaultsObj.feedMode) {
-      try {
-        // Fetch and parse the feed
-        const rssResult = await parser.parseURL(entry.feed);
-        const combinedResults = {
-          res: rssResult,
-          meta: entry,
-          errors: [],
-        };
-        // Process just this feed
-        const processed = processFeeds([combinedResults], defaultsObj.timeWindow, defaultsObj);
-        // Incremental update: send just this feed’s items to the renderer
-        win.webContents.send('incrementalFeed', processed);
-      } catch (e) {
-        // Optionally: send error to renderer too
-        win.webContents.send('feedError', { feed: entry.feed, error: e.message });
-      }
+    try {
+      // Fetch and parse the feed
+      const rssResult = await parser.parseURL(entry.feed);
+      const combinedResults = {
+        res: rssResult,
+        meta: entry,
+        errors: [],
+      };
+      // Process just this feed
+      const processed = processFeeds([combinedResults], defaultsObj.timeWindow, defaultsObj);
+      // Incremental update: send just this feed’s items to the renderer
+      win.webContents.send('incrementalFeed', processed);
+    } catch (e) {
+      // Optionally: send error to renderer too
+      win.webContents.send('feedError', { feed: entry.feed, error: e.message });
     }
+    // Increment the completed count
     completed++;
     // Optionally: update progress bar
     win.webContents.send('updateBar', [completed, urlList.length]);
