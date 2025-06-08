@@ -14,6 +14,8 @@ Version 1.0.7 includes various changes. There's now a dropdown menu for choosing
 
 Recent updates add feed network error messages at the top of display list and notifications that feeds have no valid items at the bottom. Handling of aggregator links has also been improved.
 
+With version 1.2, RSS feed rendering is now asynchronous, which reduces the load time and provides a better user experience.
+
 <img src="https://github.com/Dotnaught/rssputin/blob/main/assets/rssputin_screenshot.png" width="800" />
 
 ### Prerequisites
@@ -54,7 +56,7 @@ To build RSSputin as a desktop app, run the script for the appropriate platform 
 
 ## Authors
 
-* **Thomas Claburn** - *Version 1.1.1* - [Dotnaught](https://github.com/Dotnaught)
+* **Thomas Claburn** - *Version 1.2.0* - [Dotnaught](https://github.com/Dotnaught)
 
 ## License
 

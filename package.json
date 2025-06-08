@@ -1,7 +1,7 @@
 {
   "name": "rssputin",
   "productName": "rssputin",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "An RSS headline aggregator",
   "license": "MIT",
   "type": "module",
@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@electron/notarize": "^3.0.1",
-    "electron": "^36.3.2",
+    "electron": "^36.4.0",
     "electron-builder": "^v26.0.12",
     "eslint": "^9.28.0"
   },
