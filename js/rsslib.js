@@ -104,9 +104,15 @@ const getAllFeedsIncremental = async (urlList, defaultsObj, win) => {
     return entry.feed && entry.visible && entry.mode === defaultsObj.feedMode;
   });
   for (const entry of urlList) {
+    if (win.isDestroyed()) {
+      return;
+    }
     try {
       // Fetch and parse the feed
       const rssResult = await parser.parseURL(entry.feed);
+      if (win.isDestroyed()) {
+        return;
+      }
       const combinedResults = {
         res: rssResult,
         meta: entry,
@@ -115,15 +121,21 @@ const getAllFeedsIncremental = async (urlList, defaultsObj, win) => {
       // Process just this feed
       const processed = processFeeds([combinedResults], defaultsObj.timeWindow, defaultsObj);
       // Incremental update: send just this feed’s items to the renderer
-      win.webContents.send('incrementalFeed', processed);
+      if (!win.isDestroyed()) {
+        win.webContents.send('incrementalFeed', processed);
+      }
     } catch (e) {
       // Optionally: send error to renderer too
-      win.webContents.send('feedError', { feed: entry.feed, error: e.message });
+      if (!win.isDestroyed()) {
+        win.webContents.send('feedError', { feed: entry.feed, error: e.message });
+      }
     }
     // Increment the completed count
     completed++;
     // Optionally: update progress bar
-    win.webContents.send('updateBar', [completed, urlList.length]);
+    if (!win.isDestroyed()) {
+      win.webContents.send('updateBar', [completed, urlList.length]);
+    }
   }
 };
 
