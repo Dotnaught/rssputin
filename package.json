@@ -29,6 +29,7 @@
     "publish": "electron-builder --macos --linux --windows --publish always"
   },
   "dependencies": {
+    "@electron/asar": "^4.0.1",
     "ajv": "^8.18.0",
     "date-fns": "^4.1.0",
     "electron-context-menu": "^4.1.1",
@@ -47,9 +48,11 @@
   },
   "devDependencies": {
     "@electron/notarize": "^3.1.0",
+    "@eslint/js": "^10.0.1",
     "electron": "^40.0.0",
-    "electron-builder": "^v26.6.0",
-    "eslint": "^9.37.0"
+    "electron-builder": "^26.8.1",
+    "eslint": "^10.0.0",
+    "globals": "^17.3.0"
   },
   "build": {
     "appId": "com.lot49.rssputin",
