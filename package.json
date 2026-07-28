@@ -49,7 +49,8 @@
   "overrides": {
     "@electron/asar": "$@electron/asar",
     "@electron/universal": "^3.0.6",
-    "ejs": "^6.0.1"
+    "ejs": "^6.0.1",
+    "minimatch": "^10.2.6"
   },
   "devDependencies": {
     "@electron/notarize": "^3.1.0",
